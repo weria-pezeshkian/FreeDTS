@@ -1,0 +1,14 @@
+Integrator                      = MC
+MC_Moves                        = 1 1 1
+Initial_Step                    = 1
+Final_Step                      = 10000000
+Display_periodic                = 1000
+OutPutEnergy_periodic           = 100
+Restart_periodic                = 10000
+Kappa                           = 20 0
+OutPutTRJ_TSI                   = 1000  10  TrjTSI
+OutPutTRJ_BTS                   = 1000  10  BTS
+GeneralOutputFilename           = output
+Cell_Size                       = 2.5 2.6 2.5
+Frame_Tension                   = on Position_Rescale -4 5
+HarmonicPotentialBetweenTwoGroups = on 10 100 2000000  Group1 Group2 0 0 1

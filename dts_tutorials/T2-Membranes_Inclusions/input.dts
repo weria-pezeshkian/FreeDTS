@@ -1,0 +1,25 @@
+Integrator                      = MC
+MC_Moves                        = 1 1 1
+Initial_Step                    = 1
+Final_Step                      = 1000
+Display_periodic                = 100
+OutPutEnergy_periodic           = 100
+Restart_periodic                = 10000
+Kappa                           = 20 0
+OutPutTRJ_TSI                   = 1000  10  TrjTSI
+GeneralOutputFilename           = output
+Cell_Size                       = 2.5 2.6 2.5
+Frame_Tension                   = on Position_Rescale 0 5
+INCLUSION
+Define 2 Inclusions
+SRotation   Type   K   KG  KP  KL  C0  C0P C0L
+1 	    Pro1   10  0   0   0   0.4	 0   0
+1 	    Pro2   20  0   0   0   -0.4	 0   0
+GenerateInclusions
+Selection_Type Random
+TypeID     1     2     3    
+Density    0.3   0.1     0
+Inclusion-Inclusion-Int
+1    1    1   2     2     0.0
+1    2    1   2     0     0.0
+2    2    1   2     2     0.0
