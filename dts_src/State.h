@@ -184,6 +184,8 @@ public:
     Inclusion_Interaction_Map m_inc_ForceField;
     Inclusion_Interaction_Map *m_pinc_ForceField;
     double m_TotEnergy;
+    std::vector<double> m_Membrane_model_parameters;
+    double  m_Spontaneous_Curvature;
     CouplingtoFixedGlobalCurvature  m_CoupleGCurvature;
     SpringPotentialBetweenTwoGroups m_SpringPotentialBetweenTwoGroups;
     PositionRescaleFrameTensionCoupling m_RescaleTenCoupl;

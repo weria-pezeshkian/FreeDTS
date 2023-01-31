@@ -12,8 +12,18 @@
 Inclusion_Interaction_Map::Inclusion_Interaction_Map()
 {
 }
-Inclusion_Interaction_Map::Inclusion_Interaction_Map(std::string inputfilename)
+Inclusion_Interaction_Map::Inclusion_Interaction_Map(std::string inputfilename,std::vector<double> memmodel)
 {
+//============================================================
+    m_GaussianRigidity = memmodel.at(2);   //  membrane regidity (Gaussian)
+    m_BendingRigidity = memmodel.at(0);    //  membrane regidity
+    m_Spontaneous_Curvature = memmodel.at(1);
+    m_Membrane_model_parameters = memmodel;
+    
+    
+    
+    
+//============================================================
 for (int i=0;i<Inclusion_Type_Number;i++)
 {
     std::vector<PairInt> T;

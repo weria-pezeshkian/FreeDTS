@@ -20,9 +20,14 @@ class Inclusion_Interaction_Map
 {
 public:
 
-	Inclusion_Interaction_Map(std::string inputfilename);
+	Inclusion_Interaction_Map(std::string inputfilename,std::vector<double>);
     Inclusion_Interaction_Map();
     ~Inclusion_Interaction_Map();
+    
+    double m_GaussianRigidity;   //  membrane regidity (Gaussian)
+    double m_BendingRigidity;    //  membrane regidity
+    double  m_Spontaneous_Curvature;
+    std::vector<double> m_Membrane_model_parameters;
 public:
     PairInt GetPairInt (int,int);
 

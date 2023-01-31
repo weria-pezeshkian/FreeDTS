@@ -9,6 +9,12 @@
 Energy::Energy(Inclusion_Interaction_Map * pint)
 {
 m_pInt=pint;
+   m_Kappa = pint->m_BendingRigidity;
+   m_Kappa = m_Kappa/2.0;
+   m_KappaG = pint->m_GaussianRigidity;
+   m_mem_c0 = pint->m_Spontaneous_Curvature;
+   m_Membrane_model_parameters = pint->m_Membrane_model_parameters;
+    m_NO_Membrane_model_parameters = m_Membrane_model_parameters.size();
 }
 Energy::~Energy()
 {
@@ -16,15 +22,15 @@ Energy::~Energy()
 }
 double Energy::SingleVertexEnergy(vertex *pv)
 {
-
-    std::vector<double> Curve=pv->GetCurvature();
-    double kappa=pv->GetKappa();     //   this kappa is kappa/2  we have done it simulation class
-    double kappag=pv->GetKappaG();     //
-    double area=pv->GetArea();
-    double mean=(Curve.at(0)+Curve.at(1));
-    double gussian=(Curve.at(0))*(Curve.at(1));
     double Energy=0.0;
 
+    
+    std::vector<double> Curve=pv->GetCurvature();
+    double mean=(Curve.at(0)+Curve.at(1));
+    double gussian=(Curve.at(0))*(Curve.at(1));
+    double area=pv->GetArea();
+
+if(m_NO_Membrane_model_parameters==3)
     if(pv->VertexOwnInclusion()==true)
     {
         inclusion *inc=pv->GetInclusion();
@@ -43,24 +49,29 @@ double Energy::SingleVertexEnergy(vertex *pv)
         if(k1!=0 || k2!=0)
         {
             Vec3D LD=inc->GetLDirection();
-            k1=k1/2.0;
-            k2=k2/2.0;
+            k1=k1;
+            k2=k2;
             double Cos=LD(0);
             double Sin=LD(1);
             double C1=Curve.at(0)*Cos*Cos+Curve.at(1)*Sin*Sin;
             double C2=Curve.at(1)*Cos*Cos+Curve.at(0)*Sin*Sin;
             double H1=(C1-c1);
             double H2=(C2-c2);
-            Energy+=(k1*H1*H1+k2*H2*H2)*area;
+            Energy+=(k1*H1*H1+k2*H2*H2)*area/2;
 
         }
     }
     else
     {
-        Energy=(kappa*mean*mean-kappag*gussian)*area;
+        Energy=(m_Kappa*(mean-m_mem_c0)*(mean-m_mem_c0)-m_KappaG*gussian)*area;
 
     }
-    
+}
+else
+{
+    std::cout<<" error: we have not implememnted the large model paramters sim yet \n";
+    exit(0);
+}
 
     pv->UpdateEnergy(Energy);
 

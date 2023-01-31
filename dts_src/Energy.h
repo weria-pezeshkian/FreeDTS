@@ -6,6 +6,7 @@
 #include "triangle.h"
 #include "links.h"
 #include "Inclusion_Interaction_Map.h"
+
 /*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
@@ -15,10 +16,16 @@ class Energy
 {
 public:
     
-	Energy(Inclusion_Interaction_Map *);
+	Energy(Inclusion_Interaction_Map * );
 	 ~Energy();
 
      inline Inclusion_Interaction_Map  * GetIncIntMap()                const  {return m_pInt;}
+private:
+    double m_Kappa;
+    double m_KappaG;
+    double m_mem_c0;
+    std::vector<double> m_Membrane_model_parameters;
+    int m_NO_Membrane_model_parameters;
 
 public:
     double TotalEnergy(std::vector<vertex *> pVeretx, std::vector<links *> plink);   ///
@@ -32,6 +39,7 @@ private:
     Inclusion_Interaction_Map * m_pInt;
     double m_Angle3D;
     double m_Angle2D;
+    
 
 private:
     double Geo_Theta(vertex *v1, vertex *v2);

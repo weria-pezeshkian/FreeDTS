@@ -34,6 +34,7 @@ State::State(std::vector <std::string> argument)
     m_R_Vertex=0.05;   // Move Vertex  within a box with this size
     m_R_Box=0.04;   // box change within this range
     m_TotEnergy = 0;
+    m_Mem_Spontaneous_Curvature = 0.0;
     m_TopologyFile = "topology.top";
     m_InputFileName = "Input.dts";
     m_IndexFileName = "Index.inx";
@@ -42,7 +43,6 @@ State::State(std::vector <std::string> argument)
     m_FreezGroupName = "";
     m_BendingRigidity  = 1;
     m_GaussianRigidity = 0;
-    m_Mem_Spontaneous_Curvature = 0;
     m_Beta = 1;
     m_MinFaceAngle = -0.5;
     m_MinVerticesDistanceSquare = 1.0;
@@ -93,7 +93,13 @@ State::State(std::vector <std::string> argument)
     ExploreArguments();     // Update last state
     WriteStateLog();        // writing a log file
 
-    Inclusion_Interaction_Map inc_ForceField(m_InputFileName);
+    if(m_Membrane_model_parameters.size()==0)
+    {
+        m_Membrane_model_parameters.push_back(m_BendingRigidity);
+        m_Membrane_model_parameters.push_back(m_Spontaneous_Curvature);
+        m_Membrane_model_parameters.push_back(m_GaussianRigidity);
+    }
+    Inclusion_Interaction_Map inc_ForceField(m_InputFileName,m_Membrane_model_parameters);
     m_inc_ForceField = inc_ForceField;
     m_pinc_ForceField = &m_inc_ForceField;
 #if TEST_MODE == Enabled
@@ -451,6 +457,37 @@ void State::ReadInputFile(std::string file)
         {
             input>>str>>m_BendingRigidity>>m_GaussianRigidity;
             getline(input,rest);
+        }
+        else if(firstword == "Spont_C")
+        {
+            input>>str>>m_Mem_Spontaneous_Curvature;
+            getline(input,rest);
+        }
+        else if(firstword == "Mem_model_para") ///
+        {
+            input>>str;
+            getline(input,rest);
+            std::vector<std::string> memdata = f.split(rest);
+            for (std::vector<std::string>::iterator it = memdata.begin() ; it != memdata.end(); ++it)
+            {
+                if((*it)!=";")
+                {
+                    double value = f.String_to_Double(*it);
+                    m_Membrane_model_parameters.push_back(value);
+                }
+            }
+            if(m_Membrane_model_parameters.size()<3)
+            {
+                std::cout<<"error----> for Mem_model_para you need atleast three values \n";
+                exit(0);
+            }
+            else
+            {
+                m_BendingRigidity = m_Membrane_model_parameters.at(0);
+                m_Mem_Spontaneous_Curvature = m_Membrane_model_parameters.at(1);
+                m_GaussianRigidity = m_Membrane_model_parameters.at(2);
+
+            }
         }
         else if(firstword == "Display_periodic")
         {
