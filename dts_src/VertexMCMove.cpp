@@ -99,8 +99,6 @@ bool length =CheckDistnace();
 	{
 
 		Move();
-
-
 		//==== Update the ring triangle normal and making a copy in case the move got rejected
 		std::vector<triangle *> pT=m_pvertex->GetVTraingleList();
     		for (std::vector<triangle *>::iterator it = pT.begin() ; it != pT.end(); ++it)

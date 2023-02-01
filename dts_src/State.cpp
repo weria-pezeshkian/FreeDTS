@@ -96,7 +96,7 @@ State::State(std::vector <std::string> argument)
     if(m_Membrane_model_parameters.size()==0)
     {
         m_Membrane_model_parameters.push_back(m_BendingRigidity);
-        m_Membrane_model_parameters.push_back(m_Spontaneous_Curvature);
+        m_Membrane_model_parameters.push_back(m_Mem_Spontaneous_Curvature );
         m_Membrane_model_parameters.push_back(m_GaussianRigidity);
     }
     Inclusion_Interaction_Map inc_ForceField(m_InputFileName,m_Membrane_model_parameters);

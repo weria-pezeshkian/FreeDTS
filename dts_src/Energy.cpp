@@ -5,6 +5,10 @@
 /*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
+ Energy of a single vertex
+ Energy of a link (when connected vertices has inclusions)
+ Energy of the whole system
+ Energy change of a vertex move
  */
 Energy::Energy(Inclusion_Interaction_Map * pint)
 {
@@ -31,6 +35,7 @@ double Energy::SingleVertexEnergy(vertex *pv)
     double area=pv->GetArea();
 
 if(m_NO_Membrane_model_parameters==3)
+{
     if(pv->VertexOwnInclusion()==true)
     {
         inclusion *inc=pv->GetInclusion();
@@ -64,8 +69,12 @@ if(m_NO_Membrane_model_parameters==3)
     else
     {
         Energy=(m_Kappa*(mean-m_mem_c0)*(mean-m_mem_c0)-m_KappaG*gussian)*area;
-
     }
+}
+else if(m_NO_Membrane_model_parameters==5)
+{
+    Energy=(m_Kappa*(mean-m_mem_c0)*(mean-m_mem_c0)-m_KappaG*gussian)*area;
+    Energy+=(m_Membrane_model_parameters.at(3)*mean*mean*mean*mean+m_Membrane_model_parameters.at(4)*gussian*gussian)*area;
 }
 else
 {
@@ -126,13 +135,9 @@ double Energy::Energy_OneLinkFlip(links * plinks)
 }
 double Energy::Energy_OneVertexMove(vertex * pVeretx)
 {
-
+// moving a vertex leads to changes in the energy of the vertex and its beighbouring vertices. The function give the total energy of such system. 
     double E=0.0;
     std::vector<vertex *> NpVer=pVeretx->GetVNeighbourVertex(); /// Get The vertexs on the ring
-
-
-    
-    
     E+=SingleVertexEnergy(pVeretx);
 
     for (std::vector<vertex *>::iterator it = NpVer.begin() ; it != NpVer.end(); ++it)
