@@ -14,11 +14,4 @@ University of Copenhagen,
 Blegdamsvej 17, 2100 Copenhagen, DENMARK
 
 
-## Compiling the source code
-To compile the OPENDTS source code just execute “compile.sh” script.
-
-./compile.sh
-
-This will create three binary files: DTS, CNV, and GEN. The DTS is for running simulations; GEN is for generating triangulated files (TS) and CNV is for converting different file formats.
-
-## For More see User_Manual_Tutorials.pdf
+## Compile useage and tutorials: see User_Manual_Tutorials.pdf
