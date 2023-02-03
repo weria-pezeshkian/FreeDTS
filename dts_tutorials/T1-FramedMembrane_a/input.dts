@@ -1,12 +1,10 @@
 Integrator                      = MC
 MC_Moves                        = 1 1 1
 Initial_Step                    = 1
-Final_Step                      = 1000
+Final_Step                      = 100000
 Display_periodic                = 1000
 OutPutEnergy_periodic           = 100
 Restart_periodic                = 10000
 Kappa                           = 20 0
 OutPutTRJ_TSI                   = 1000  10  TrjTSI
 GeneralOutputFilename           = output
-Cell_Size                       = 2.5 2.6 2.5
-Frame_Tension                   = on Position_Rescale 0 5

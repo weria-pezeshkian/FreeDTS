@@ -50,7 +50,7 @@ State::State(std::vector <std::string> argument)
     m_Display_periodic  = 1000;
     m_Centering         = 50000;
     m_OutPutEnergy_periodic = 100;
-    m_CNTCELL(0) = 1;m_CNTCELL(1) = 1;m_CNTCELL(2) = 1;
+    m_CNTCELL(0) = 2;m_CNTCELL(1) = 2;m_CNTCELL(2) = 2;
     m_Parallel_Tempering.State = false;
     m_TRJTSI.tsiPeriod = 0;
     m_TRJTSI.tsiPrecision = 1;
