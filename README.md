@@ -4,6 +4,8 @@ FreeDTS is software to perform computational research on biomembranes at messocp
 
 <img width="884" alt="Screenshot 2023-02-03 at 13 50 32" src="https://user-images.githubusercontent.com/47776510/216607774-2a3e9391-5a6d-43ce-998f-40960f38c273.png">
 
+## version 1.1
+
 ## Developer and Contribution 
 Weria Pezeshkian (weria.pezeshkian@gmail.com; weria.pezeshkian@nbi.ku.dk),
 Niels Bohr International Academy, 
