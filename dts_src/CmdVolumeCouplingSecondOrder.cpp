@@ -114,7 +114,8 @@ double CmdVolumeCouplingSecondOrder::GetEnergyChange(int step, double oldarea, d
 }
 double CmdVolumeCouplingSecondOrder::Energy(double volume, double area, double alpha)
 {
-    
+   // m_6SQPI = 1.0/(6.0*sqrt(pi));   /// 1/6pi^1/2
+
     
         double E=0;
         double SQA = sqrt(area);

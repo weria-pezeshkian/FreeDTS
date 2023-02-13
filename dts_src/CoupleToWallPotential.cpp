@@ -152,7 +152,7 @@ void CoupleToWallPotential::Initialize(std::vector <vertex *> Apv)
             if(r2<rmin*rmin)
             rmin = sqrt(r2);
         }
-        m_h = rmax - rmin;
+        m_h = rmax - rmin+0.05;
         m_r = (rmax + rmin)/2;
         
         if(m_h<m_H)
@@ -220,10 +220,20 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
         }
     }
     
-    
-    Vec3D X(v->GetVXPos()+dx,v->GetVYPos()+dy,v->GetVZPos()+dz);
-    if(APointIsInsideTheBound(X)==false)
+    Vec3D X0(v->GetVXPos(),v->GetVYPos(),v->GetVZPos());
+    double dx0 = DistanceOfAPointFromBound(X0);
+    Vec3D X1(v->GetVXPos()+dx,v->GetVYPos()+dy,v->GetVZPos()+dz);
+    double dx1 = DistanceOfAPointFromBound(X1);
+
+    if(APointIsInsideTheBound(X1)==false && m_PotentialType!="EllipsoidalShell")
+    {
         accept = false;
+    }
+    else if(dx1>dx0 && APointIsInsideTheBound(X1)==false)
+    {
+        accept = false;
+    }
+
     
     return accept;
 }
@@ -318,7 +328,7 @@ void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
                 rmin = sqrt(r2);
         }
         m_r = (rmax + rmin)/2;
-        m_h = (rmax - rmin);
+        m_h = (rmax - rmin)-0.1;
         double dx = fabs(m_h-m_H);
         if(dx<DR)
         {
@@ -387,10 +397,27 @@ bool CoupleToWallPotential::APointIsInsideTheBound(Vec3D X)
         double dx = X(0)-m_COG(0);
         double dy = X(1)-m_COG(1);
         double dz = X(2)-m_COG(2);
-        double r2 = dx*dx+dy*dy/(m_B*m_B)+dz*dz/(m_C*m_C);
-        
+        double r2 = dx*dx+dy*dy/(m_B*m_B)+dz*dz/(m_C*m_C);   // r2=dx^2+dy^2/b^2+dz^2/c^2
+
         if(r2>(m_r+m_h/2)*(m_r+m_h/2) || r2<(m_r-m_h/2)*(m_r-m_h/2) )
             Itis = false;
+    }
+    
+    return Itis;
+}
+double CoupleToWallPotential::DistanceOfAPointFromBound(Vec3D X)
+{
+    // checking if a point is inside the wall
+    double Itis = 0;
+    if(m_PotentialType=="EllipsoidalShell")
+    {
+        double dx = X(0)-m_COG(0);
+        double dy = X(1)-m_COG(1);
+        double dz = X(2)-m_COG(2);
+        double r2 = dx*dx+dy*dy/(m_B*m_B)+dz*dz/(m_C*m_C);   // r2=dx^2+dy^2/b^2+dz^2/c^2
+        
+        
+            Itis = fabs(sqrt(r2)-m_r);
     }
     
     return Itis;

@@ -55,6 +55,7 @@ private:
 private:
     bool AllVerticesAreInsideTheBound();
     bool APointIsInsideTheBound(Vec3D X);
+    double DistanceOfAPointFromBound(Vec3D X);
     void MoveTheWallsTowardTheTarget(int step);
 };
 
