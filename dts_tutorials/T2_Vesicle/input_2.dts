@@ -1,13 +1,12 @@
-Integrator                      = MC
+Integrator                      = MC_b
 MC_Moves                        = 1 1 1
 Initial_Step                    = 1
-Final_Step                      = 20000
+Final_Step                      = 200000
 Display_periodic                = 1000
 OutPutEnergy_periodic           = 100
 Restart_periodic                = 10000
-Kappa                           = 10 0
+Kappa                           = 30 0
 OutPutTRJ_TSI                   = 1000  10  TrjTSI
 GeneralOutputFilename           = output
 Cell_Size                       = 2.5 2.6 2.5
-CoupleToRigidWalls              = on EllipsoidalShell  10000  10 10 10  0.01
-
+Volume_Constraint               = on 100000     0  0.1     0.4

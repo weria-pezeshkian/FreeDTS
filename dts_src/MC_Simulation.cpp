@@ -328,7 +328,8 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
     ActiveTwoState->ActiveExchange(tot_Energy);
 
 //====================centering the box =============================================
-if(mcstep%box_centering_f==0 && box_centering_f!=0)
+if(box_centering_f!=0)
+if(mcstep%box_centering_f==0)
 {
         CenterIntheBox();// center the box
         CNT.Generate(); // update cnt cell;

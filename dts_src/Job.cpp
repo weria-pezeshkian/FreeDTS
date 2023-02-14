@@ -12,6 +12,7 @@
 #include "State.h"
 #include "Nfunction.h"
 #include "MC_Simulation.h"
+#include "MC_Simulation_TypeB.h"
 #include "RNG.h"
 
 
@@ -177,6 +178,10 @@ std::cout<<"thread id "<<Thread_ID<<" total no threead "<<omp_get_num_threads()<
                 if(S.m_Integrator == "MC")
                 {
                     MC_Simulation SIM(&S);
+                }
+                else if(S.m_Integrator == "MC_b")
+                {
+                    MC_Simulation_TypeB SIM(&S);
                 }
                 
             }
