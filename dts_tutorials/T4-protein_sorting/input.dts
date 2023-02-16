@@ -12,14 +12,17 @@ Cell_Size                       = 2.5 2.6 2.5
 Frame_Tension                   = off Position_Rescale 0 5
 INCLUSION
 Define 2 Inclusions
-SRotation   Type   K   KG  KP  KL  C0  C0P C0L
-1 	    Pro1   20  0   0   0   0.6	 0   0
-1 	    Pro2   20  0   0   0   -0.4	 0   0
+SRotation   Type   K   KG  KP  KL  C0     C0P  C0L
+1 	    Pro1   20  0   0   0   0.4	 0   0
+1 	    Pro2   20  0   0   0  -0.4	 0   0
+1 	    Pro2   20  0  10   0   0	 1   0
 GenerateInclusions
 Selection_Type Random
 TypeID     1     2     3    
-Density    0.2   0.0     0
+Density    0.2   0.2     0.1
 Inclusion-Inclusion-Int
-1    1    1   0     2.5     0.0
+1    1    1   0     2     0.0
+2    2    1   0     2     0.0
+3    3    1   0     1       -1
 
 
