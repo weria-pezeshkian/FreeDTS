@@ -21,8 +21,8 @@ Selection_Type Random
 TypeID     1     2     3    
 Density    0.1   0.1  0.0
 Inclusion-Inclusion-Int
-1    1    1   0     1     0.0
-2    2    1   0     1     0.0
+1    1    1   0     0     0.0
+2    2    1   0     0     0.0
 1    2    1   0     1     0.0
 
 

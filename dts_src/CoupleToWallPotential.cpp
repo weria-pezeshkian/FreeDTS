@@ -244,13 +244,17 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
 void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
 {
     double DR = 0.02;
-    if(m_PotentialType=="TwoFlatParallelWall")
+    std::string sms;
+    
+   if(m_PotentialType=="TwoFlatParallelWall")
     {
         double dx = (m_h-m_H);
         if(dx<DR)
         {
             m_h =m_H;
             m_ReachTargetWall = true;
+            Nfunction f;
+            sms = "TwoFlatParallelWall, COM_Z and H = " + f.Int_to_String(m_COG(2)) +"  "+ f.Int_to_String(m_h);
         }
         else
         {
@@ -289,7 +293,10 @@ void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
         }
         if(m_lz == m_Lz && m_lx == m_Lx && m_ly == m_Ly)
         {
+            Nfunction f;
             m_ReachTargetWall = true;
+            sms = "Cuboid, cmx cmy cmz lx ly lz " +f.Int_to_String(m_COG(0))+" "+f.Int_to_String(m_COG(1))+" "+f.Int_to_String(m_COG(2))+" "+ f.Int_to_String(m_lx)  +"  "+ f.Int_to_String(m_ly) +"  "+ f.Int_to_String(m_lz);
+
         }
 
     }
@@ -299,7 +306,10 @@ void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
         if(dx<DR)
         {
             m_r =m_A;
+            Nfunction f;
             m_ReachTargetWall = true;
+            sms = "Ellipsoid, R " +f.Int_to_String(m_COG(0))+" "+f.Int_to_String(m_COG(1))+" "+f.Int_to_String(m_COG(2))+" "+ f.Int_to_String(m_r);
+
         }
         else
         {
@@ -338,9 +348,17 @@ void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
         {
             m_h =m_H;
             m_ReachTargetWall = true;
+            Nfunction f;
+            sms = m_PotentialType + " cmx cmy cmz R  DH" +f.Int_to_String(m_COG(0))+" "+f.Int_to_String(m_COG(1))+" "+f.Int_to_String(m_COG(2))+" "+ f.Int_to_String(m_r)+" "+f.Int_to_String(m_h);
+
         }
 
-
+    }
+    if(step<m_EQTime && m_ReachTargetWall == true)
+    {
+        Nfunction f;
+        f.Write_One_LogMessage(sms);
+        m_EQTime = step;
     }
     
         
