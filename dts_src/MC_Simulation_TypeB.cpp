@@ -19,9 +19,6 @@
 #include "ActiveTwoStateInclusion.h"
 
 /*
-#include "ActiveTwoStateInclusion.h"
-*/
-/*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
  MC simulation class, runs mc simulation if it is defined in the input file.
@@ -322,8 +319,7 @@ if(Targeted_State==true)
 if((pState->m_RESTART).restartPeriod!=0 && mcstep%((pState->m_RESTART).restartPeriod)==0)
 {
      pRestart->WrireRestart(mcstep,gfilename,(pState->m_pMesh),R,RB);
-
-     energyfile.flush(); // the eneergy file
+     energyfile.flush(); // the energy file
 }
 if((pState->m_TRJBTS).btsPeriod!=0 && mcstep%((pState->m_TRJBTS).btsPeriod)==0 )
 {

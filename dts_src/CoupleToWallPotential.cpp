@@ -186,8 +186,8 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
         else
         {
             m_ReachTargetWall = true; // tem solution
-            std::cout<<"---> Warning, the simulation step is larger equilibration step but we have not reach the targeted wall "<<std::endl;
-            std::cout<<" better to increase the equilibration steps "<<std::endl;
+            std::cout<<"---> Warning, the simulation steps has reach equilibration step but we have not reach the targeted wall "<<std::endl;
+            std::cout<<" better to increase the equilibration step "<<std::endl;
             Nfunction f;
             
             std::string sms;
@@ -225,7 +225,11 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
     Vec3D X1(v->GetVXPos()+dx,v->GetVYPos()+dy,v->GetVZPos()+dz);
     double dx1 = DistanceOfAPointFromBound(X1);
 
-    if(APointIsInsideTheBound(X1)==false && m_PotentialType!="EllipsoidalShell")
+    if(m_ReachTargetWall==true && APointIsInsideTheBound(X1)==false)
+    {
+        accept = false;
+    }
+    else if(APointIsInsideTheBound(X1)==false && m_PotentialType!="EllipsoidalShell" && m_PotentialType!="TwoFlatParallelWall")
     {
         accept = false;
     }
@@ -408,8 +412,14 @@ bool CoupleToWallPotential::APointIsInsideTheBound(Vec3D X)
 double CoupleToWallPotential::DistanceOfAPointFromBound(Vec3D X)
 {
     // checking if a point is inside the wall
+
     double Itis = 0;
-    if(m_PotentialType=="EllipsoidalShell")
+    if(m_PotentialType=="TwoFlatParallelWall")
+    {
+        Itis = fabs(X(2)-m_COG(2));
+ 
+    }
+    else if(m_PotentialType=="EllipsoidalShell")
     {
         double dx = X(0)-m_COG(0);
         double dy = X(1)-m_COG(1);
