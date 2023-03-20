@@ -59,6 +59,322 @@ Generate::~Generate()
     
 }
 //======== high genus
+void Generate::HighTopologyStructurePBC()
+{
+    srand (40072);
+
+
+///=======
+//== Read Gen-morphology variables
+//===========
+    int TopDegree = m_genus;
+    int NoVertex = m_N;
+    std::vector<Vertex_Map> allV;
+    std::vector<Triangle_Map> allT;
+    std::vector<Inclusion_Map> allI;
+    double DR = 0.001;
+    double dx = 0;
+               // cleans the log and error files
+    
+    if(m_genus>m_N*m_N)
+    {
+        std::cout<<" the topology degree is high, you may use higher number of verteces \n";
+    }
+    m_noUpperCreatedHole = 0;
+    m_noLowerCreatedHole = 0;
+//============================
+// Gen vertex
+//==============================
+    double zm = m_Box(2)/2;
+    double xm= 1;
+    double ym= 1;
+    double l=1.01;
+    int id=0;
+    for (int i=0;i<m_N;i++)
+    {
+        for (int j=0;j<m_N;j++)
+        {
+         
+            
+            
+            double x = i*l+xm;
+            double y = j*l+ym;
+            double z = zm+l/2;
+            Vertex_Map v;
+            v.id = id;
+            dx = double(rand()%1000)/1000.0;
+            v.x = x+dx*DR;
+            dx = double(rand()%1000)/1000.0;
+            v.y = y+dx*DR;
+            dx = double(rand()%1000)/1000.0;
+            v.z = z+dx*DR;
+            v.domain = 0;
+            allV.push_back(v);
+            id++;
+            
+        }
+        
+    }
+    
+    
+
+    for (int i=0;i<m_N;i++)
+    {
+        for (int j=0;j<m_N;j++)
+        {
+            
+            double x = i*l+xm;
+            double y = j*l+ym;
+            double z = zm-l/2;
+            Vertex_Map v;
+            v.id = id;
+            dx = double(rand()%1000)/1000.0;
+            v.x = x+dx*DR;
+            dx = double(rand()%1000)/1000.0;
+            v.y = y+dx*DR;
+            dx = double(rand()%1000)/1000.0;
+            v.z = z+dx*DR;
+            v.domain = 0;
+            allV.push_back(v);
+            id++;
+        }
+        
+    }
+    
+
+//============================
+// Connect triangles
+//==============================
+   id=0;
+    bool makehole=false;
+    for (int i=0;i<m_N-1;i++)
+    {
+        for (int j=0;j<m_N-1;j++)
+        {
+            
+
+            makehole=MakeHole(1,i,j);
+            
+            if(makehole==true)
+            {
+                std::vector<Triangle_Map> temT = MakeTrianglesAroundHole(id, i, j);
+                for (std::vector<Triangle_Map>::iterator it = temT.begin() ; it != temT.end(); ++it)
+                    allT.push_back(*it);
+
+                id=id+8;
+            }
+            else
+            {
+                int v1id=idfromij(1,i,j);
+                int v2id=idfromij(1,i,j+1);
+                int v3id=idfromij(1,i+1,j+1);
+                Triangle_Map T1;
+                T1.id = id;
+                T1.v1 = v1id;
+                T1.v2 = v2id;
+                T1.v3 = v3id;
+                allT.push_back(T1);
+                id++;
+                
+                v1id=idfromij(1,i,j);
+                v2id=idfromij(1,i+1,j+1);
+                v3id=idfromij(1,i+1,j);
+                Triangle_Map T2;
+                T2.id = id;
+                T2.v1 = v1id;
+                T2.v2 = v2id;
+                T2.v3 = v3id;
+                allT.push_back(T2);
+                id++;
+            }
+
+
+            
+        }
+        
+    }
+    
+    // lower layer
+    for (int i=0;i<m_N-1;i++)
+    {
+        for (int j=0;j<m_N-1;j++)
+        {
+            int v1id=idfromij(2,i,j);
+            int v3id=idfromij(2,i,j+1);
+            int v2id=idfromij(2,i+1,j+1);
+
+            makehole=MakeHole(2,i,j);
+
+            
+            if(makehole==true)
+            {
+
+            }
+            else
+            {
+                Triangle_Map T1;
+                T1.id = id;
+                T1.v1 = v1id;
+                T1.v2 = v2id;
+                T1.v3 = v3id;
+                allT.push_back(T1);
+                id++;
+                v1id=idfromij(2,i,j);
+                v3id=idfromij(2,i+1,j+1);
+                v2id=idfromij(2,i+1,j);
+                Triangle_Map T2;
+                T2.id = id;
+                T2.v1 = v1id;
+                T2.v2 = v2id;
+                T2.v3 = v3id;
+                allT.push_back(T2);
+                id++;
+            }
+            
+
+            
+        }
+        
+    }
+    
+
+    for (int i=0;i<m_N-1;i++)
+    {
+        
+        int v1id=idfromij(1,0,i);
+        int v2id=idfromij(2,0,i);
+        int v3id=idfromij(2,0,i+1);
+        Triangle_Map T1;
+        T1.id = id;
+        T1.v1 = v1id;
+        T1.v2 = v2id;
+        T1.v3 = v3id;
+        allT.push_back(T1);
+        id++;
+        
+        
+         v1id=idfromij(1,0,i);
+         v2id=idfromij(2,0,i+1);
+         v3id=idfromij(1,0,i+1);
+        Triangle_Map T2;
+        T2.id = id;
+        T2.v1 = v1id;
+        T2.v2 = v2id;
+        T2.v3 = v3id;
+        allT.push_back(T2);
+        id++;
+
+        
+    }
+    
+    
+    for (int i=0;i<m_N-1;i++)
+    {
+        
+        int v1id=idfromij(1,m_N-1,i+1);
+        int v2id=idfromij(2,m_N-1,i+1);
+        int v3id=idfromij(2,m_N-1,i);
+        Triangle_Map T1;
+        T1.id = id;
+        T1.v1 = v1id;
+        T1.v2 = v2id;
+        T1.v3 = v3id;
+        allT.push_back(T1);
+        id++;
+        
+        
+        v1id=idfromij(1,m_N-1,i+1);
+        v2id=idfromij(2,m_N-1,i);
+        v3id=idfromij(1,m_N-1,i);
+        Triangle_Map T2;
+        T2.id = id;
+        T2.v1 = v1id;
+        T2.v2 = v2id;
+        T2.v3 = v3id;
+        allT.push_back(T2);
+        id++;
+        
+    }
+    
+    for (int i=0;i<m_N-1;i++)
+    {
+        
+        int v1id=idfromij(1,i+1,0);
+        int v2id=idfromij(2,i+1,0);
+        int v3id=idfromij(2,i,0);
+        Triangle_Map T1;
+        T1.id = id;
+        T1.v1 = v1id;
+        T1.v2 = v2id;
+        T1.v3 = v3id;
+        allT.push_back(T1);
+        id++;
+        
+        
+        v1id=idfromij(1,i+1,0);
+        v2id=idfromij(2,i,0);
+        v3id=idfromij(1,i,0);
+        Triangle_Map T2;
+        T2.id = id;
+        T2.v1 = v1id;
+        T2.v2 = v2id;
+        T2.v3 = v3id;
+        allT.push_back(T2);
+        id++;
+        
+    }
+    
+    
+    for (int i=0;i<m_N-1;i++)
+    {
+        
+        int v1id=idfromij(1,i,m_N-1);
+        int v2id=idfromij(2,i,m_N-1);
+        int v3id=idfromij(2,i+1,m_N-1);
+        Triangle_Map T1;
+        T1.id = id;
+        T1.v1 = v1id;
+        T1.v2 = v2id;
+        T1.v3 = v3id;
+        allT.push_back(T1);
+        id++;
+        
+        
+        v1id=idfromij(1,i,m_N-1);
+        v2id=idfromij(2,i+1,m_N-1);
+        v3id=idfromij(1,i+1,m_N-1);
+        Triangle_Map T2;
+        T2.id = id;
+        T2.v1 = v1id;
+        T2.v2 = v2id;
+        T2.v3 = v3id;
+        allT.push_back(T2);
+        id++;
+        
+    }
+    std::cout<<" number of the vertex "<<allV.size()<<" total number of triangles "<< allT.size()<<"\n";
+    MeshBluePrint BluePrint;
+    BluePrint.bvertex = allV;
+    BluePrint.btriangle = allT;
+    BluePrint.binclusion = allI;
+    BluePrint.simbox = m_Box;
+    
+    std::string ext = m_OutputFilename.substr(m_OutputFilename.find_last_of(".") + 1);
+    
+    if(ext==TSExt)
+    {
+        WriteQFile(m_OutputFilename , BluePrint);
+    }
+    else if(ext==TSIExt)
+    {
+        WriteTSI(m_OutputFilename , BluePrint);
+    }
+    else
+    {
+        std::cout<<"---> Error: output file with "<<ext<<" extension is not recognized.  It should have either "<<TSExt<<" or "<<TSIExt<<" extension. "<<std::endl;
+    }
+
+}
 void Generate::HighTopologyStructure()
 {
     srand (40072);

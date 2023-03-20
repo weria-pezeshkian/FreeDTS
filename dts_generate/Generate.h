@@ -46,6 +46,8 @@ private:
     std::vector<Triangle_Map>  MakeTrianglesAroundHole(int, int,int);
     bool MakeHole(int,int,int);
     void HighTopologyStructure();
+    void HighTopologyStructurePBC();
+
 public:
     std::vector <std::string> m_Argument;
     int m_Seed;       // seed for random number generator

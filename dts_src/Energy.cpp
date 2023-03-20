@@ -177,6 +177,12 @@ double Energy::TwoInclusionsInteractionEnergy(links * lp)
             theta = Geo_Theta(v1,v2);
             e=InteractionFunction(ff.at(0), ff.at(1),ff.at(2),theta);
           }
+          else if(FunctionType == 2)
+          {
+              m_Angle3D = 0;
+              m_Angle2D = 0;
+              e = F2(v1,v2,ff);
+          }
          else if(FunctionType == 10)
          {
              m_Angle3D = 0;
@@ -257,6 +263,31 @@ double Energy::Geo_Theta(vertex *v1, vertex *v2)
     
     
     return theta;
+}
+double Energy::F2(vertex *v1, vertex *v2, std::vector<double> var)
+{
+    /// F = -e0+e1*cosN(phi-phi0)+e2*cos(beta-beta0)
+    double E = 0;
+    m_Angle2D = Geo_Theta(v1,v2);
+    Vec3D N1 = v1->GetNormalVector();
+    Vec3D N2 = v2->GetNormalVector();
+    double beta = acos(N1.dot(N1,N2));
+    
+    
+    double e0 = var.at(0);
+    double e1 = var.at(1);
+    double N = var.at(2);
+    double theta0 = var.at(3);
+    double e2 = var.at(4);
+    double beta0 = var.at(6);
+    //std::cout<< e0 <<"  "<< e1 <<"  "<< e2 <<"  "<< N <<"  "<<alpha<<"  "<< theta0 <<" \n ";
+
+    theta0 = theta0/180.0*3.14;
+    beta0 = beta0/180.0*3.14;
+    
+    E = -e0-e1*cos(N*(m_Angle2D-theta0))-e2*cos(beta-beta0);
+    
+    return E;
 }
 double Energy::F10(vertex *v1, vertex *v2, std::vector<double> var)
 {

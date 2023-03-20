@@ -44,6 +44,7 @@ private:
 private:
     double Geo_Theta(vertex *v1, vertex *v2);
     double F10(vertex *v1, vertex *v2,std::vector<double>);
+    double F2(vertex *v1, vertex *v2,std::vector<double>);
     double F11(vertex *v1, vertex *v2,std::vector<double>);
 
 
