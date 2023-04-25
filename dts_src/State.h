@@ -20,6 +20,8 @@
 #include "ActiveTwoStateInclusion.h"
 #include "Apply_Osmotic_Pressure.h"
 #include "Apply_Constant_Area.h"
+#include "Apply_Constant_Vertex_Area.h"
+
 
 /*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
@@ -60,10 +62,17 @@ struct STRUC_OSMOTIC {  // data structure for inputs of osmotic pressure algorit
     double P0;
 
 };
-struct STRUC_ConstantArea {  // data structure for inputs of osmotic pressure algorithm
+struct STRUC_ConstantArea {  // data structure for inputs of constant area algorithm
     bool State;
     int EQSteps;
-    double Gamma;   // TargetV = GammaV_0;  V_0 = 1/6*(A0^1.5)/pi^0.5 ; A_0 = N_T*3sqrt(3)/4
+    double Gamma;
+    double K0;
+    
+};
+struct STRUC_ConstanVertextArea {  // data structure for inputs of constant area algorithm
+    bool State;
+    int EQSteps;
+    double Gamma;
     double K0;
     
 };
@@ -177,6 +186,7 @@ public:
     STRUC_VOLUME       m_VolumeConstraint ;  // data structure for inputs apply constant area
     STRUC_OSMOTIC      m_STRUC_OSMOTIC;	//
     STRUC_ConstantArea m_STRUC_ConstantArea;
+    STRUC_ConstanVertextArea m_STRUC_ConstantVertexArea;
     STRUC_MCMOVES m_MCMove;                 // data structure for turning on and off certain moves
     STRUC_ActiveTwoStateInclusion m_STRUC_ActiveTwoStateInclusion;  // input data to start active two state membrane
     Parallel_Tempering m_Parallel_Tempering; // an object that includes info about Parallel Tempering method that we are applying
@@ -191,6 +201,7 @@ public:
     CmdVolumeCouplingSecondOrder m_VolumeCouplingSecondOrder;
     Apply_Osmotic_Pressure m_Apply_Osmotic_Pressure;
     Apply_Constant_Area m_Apply_Constant_Area;
+    Apply_Constant_Vertex_Area m_Apply_Constant_VertexArea;
     ActiveTwoStateInclusion m_ActiveTwoStateInclusion;
     LinkFlipMC m_LinkFlipMC;
     VertexMCMove m_VertexMoveMC;

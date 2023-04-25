@@ -244,8 +244,8 @@ void Convert::HelpMessage()
     std::cout<<"-------------------------------------------------------------------------------"<<"\n";
     std::cout<<"  option    type        default            description "<<"\n";
     std::cout<<"-------------------------------------------------------------------------------"<<"\n";
-    std::cout<<"  -f         string       out.q               input file name, could be tsi or q file formats "<<"\n";
-    std::cout<<"  -o         string       out.tsi             output file name, could be tsi, vtu, gro or q file formats "<<"\n";
+    std::cout<<"  -in         string       out.q               input file name, could be tsi or q file formats "<<"\n";
+    std::cout<<"  -o          string       out.tsi             output file name, could be tsi/vtu/gro or q file formats "<<"\n";
     std::cout<<"=========================================================================="<<"\n";
     std::cout<<"=========================================================================="<<"\n";
     std::cout<<"------------------ version "<<SoftWareVersion<<" ------------------"<<"\n";

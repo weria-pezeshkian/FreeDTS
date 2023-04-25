@@ -3,8 +3,7 @@
 /*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
- this class is created in version 1.2 to couple the system to a force
-for taraget Apply_Constant_Area.
+ this class try to force the membrane area to a targeted size
 */
 #include "SimDef.h"
 #include "vertex.h"

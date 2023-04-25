@@ -121,7 +121,7 @@ double CmdVolumeCouplingSecondOrder::Energy(double volume, double area, double a
         double SQA = sqrt(area);
         double v0 = m_6SQPI*SQA*SQA*SQA;
         double v =volume/v0;
-        E = -m_DeltaP*volume+m_KV*(v-m_TargetV)*(v-m_TargetV)*v0*v0;
+        E = -m_DeltaP*volume+m_KV*(v-m_TargetV)*(v-m_TargetV);
         E = alpha*E;
         return E;
 }

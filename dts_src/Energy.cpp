@@ -266,7 +266,7 @@ double Energy::Geo_Theta(vertex *v1, vertex *v2)
 }
 double Energy::F2(vertex *v1, vertex *v2, std::vector<double> var)
 {
-    /// F = -e0+e1*cosN(phi-phi0)+e2*cos(beta-beta0)
+    /// F = -e0+e1*cosN(phi-phi0)+e2*(l/l0-1)cos(beta-beta0)
     double E = 0;
     m_Angle2D = Geo_Theta(v1,v2);
     Vec3D N1 = v1->GetNormalVector();
@@ -279,13 +279,21 @@ double Energy::F2(vertex *v1, vertex *v2, std::vector<double> var)
     double N = var.at(2);
     double theta0 = var.at(3);
     double e2 = var.at(4);
-    double beta0 = var.at(6);
+    double beta0 = var.at(5);
     //std::cout<< e0 <<"  "<< e1 <<"  "<< e2 <<"  "<< N <<"  "<<alpha<<"  "<< theta0 <<" \n ";
 
     theta0 = theta0/180.0*3.14;
     beta0 = beta0/180.0*3.14;
     
-    E = -e0-e1*cos(N*(m_Angle2D-theta0))-e2*cos(beta-beta0);
+    //====== obtain the orinatation of the beta
+    Vec3D P1 (v1->GetVXPos(),v1->GetVYPos(),v1->GetVZPos()) ;
+    Vec3D P2 (v2->GetVXPos(),v2->GetVYPos(),v2->GetVZPos()) ;
+    double l = (P2-P1).norm();
+    Vec3D l1 = N1-N2+(P2-P1)*(1.0/l);
+    if(l1.norm()<l)
+        beta=-beta;
+    
+    E = -e0-e1*cos(N*(m_Angle2D-theta0))-e2*(beta-beta0)*(beta-beta0);
     
     return E;
 }

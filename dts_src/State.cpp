@@ -48,7 +48,7 @@ State::State(std::vector <std::string> argument)
     m_MinVerticesDistanceSquare = 1.0;
     m_MaxLinkLengthSquare = 3.0;
     m_Display_periodic  = 1000;
-    m_Centering         = 50000;
+    m_Centering         = 0;
     m_OutPutEnergy_periodic = 100;
     m_CNTCELL(0) = 2;m_CNTCELL(1) = 2;m_CNTCELL(2) = 2;
     m_Parallel_Tempering.State = false;
@@ -78,6 +78,8 @@ State::State(std::vector <std::string> argument)
     m_VolumeConstraint.K = 0;
     m_VolumeConstraint.targetV = 1 ;
     m_STRUC_OSMOTIC.State = false;
+    m_STRUC_ConstantArea.State = false;
+    m_STRUC_ConstantVertexArea.State = false;
     m_STRUC_ActiveTwoStateInclusion.state = false;
     m_STRUC_ActiveTwoStateInclusion.nametype1 = " ";
     m_STRUC_ActiveTwoStateInclusion.nametype2 = " ";
@@ -381,6 +383,17 @@ void State::ReadInputFile(std::string file)
                 m_STRUC_ConstantArea.State = true;
             Apply_Constant_Area C(m_STRUC_ConstantArea.State,m_STRUC_ConstantArea.EQSteps,m_STRUC_ConstantArea.Gamma,m_STRUC_ConstantArea.K0);
             m_Apply_Constant_Area = C;
+            
+        }
+        else if(firstword == "Apply_Constant_VertexArea")
+        {
+            std::string state;
+            m_STRUC_ConstantVertexArea.State = false;
+            input>>str>>state>>(m_STRUC_ConstantVertexArea.EQSteps)>>(m_STRUC_ConstantVertexArea.Gamma)>>(m_STRUC_ConstantVertexArea.K0);
+            if(state=="on" || state=="ON" || state=="On" || state=="yes" || state=="Yes" )
+                m_STRUC_ConstantVertexArea.State = true;
+            Apply_Constant_Area C(m_STRUC_ConstantVertexArea.State,m_STRUC_ConstantVertexArea.EQSteps,m_STRUC_ConstantVertexArea.Gamma,m_STRUC_ConstantVertexArea.K0);
+            m_Apply_Constant_VertexArea = C;
             
         }
         else if(firstword == "Final_Step")

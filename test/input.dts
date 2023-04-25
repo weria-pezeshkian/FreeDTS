@@ -11,3 +11,4 @@ OutPutTRJ_TSI                   = 1000  10  TrjTSI
 GeneralOutputFilename           = output
 Cell_Size                       = 2.5 2.6 2.5
 Frame_Tension                   = on Position_Rescale 0 5
+Apply_Constant_Area             = 1 1  10000
