@@ -26,13 +26,13 @@ Curvature::Curvature(vertex * pvertex)
     if(Area==0)
     {
     std::cout<<Ntr.size()<<"\n";
-	std::string sms=" WARNING: vertex has a zero area \n";
+	std::string sms=" error----> vertex has a zero area \n";
 	std::cout<<sms<<"\n";
         exit(0);
     }
     else if(Area<0)
     {
-	std::string sms=" WARNING: vertex has a negetive area \n";
+	std::string sms=" error----> vertex has a negetive area \n";
 	std::cout<<sms<<"\n";
         exit(0);
     }
@@ -42,10 +42,7 @@ Curvature::Curvature(vertex * pvertex)
     no=1.0/no;
     Normal=Normal*no;
     m_pVertex->UpdateNormal_Area(Normal,Area);
-    
-
-   // std::cout<<Normal(0)<<"  "<<Normal(1)<<"  "<<Normal(2)<<"\n";
-    ///=======
+        ///=======
     //=== Shape Operator
     //========
     Tensor2  SV;
@@ -100,18 +97,8 @@ Curvature::Curvature(vertex * pvertex)
     Tensor2 LSV;// Local SV
     LSV=(Hous.Transpose(Hous))*(SV*Hous);    // LSV is the curvature matrix in the local frame, the it is a 2*2 minor matrix since all the 3 component are zero.
 
-
-  /*  std::cout<<LSV(0,0)<<" "<<LSV(0,1)<<" "<<LSV(0,2)<<" "<<"\n";
-    std::cout<<LSV(1,0)<<" "<<LSV(1,1)<<" "<<LSV(1,2)<<" "<<"\n";
-    std::cout<<LSV(2,0)<<" "<<LSV(2,1)<<" "<<LSV(2,2)<<" "<<"\n";
-    std::cout<<"\n";*/
-
-
     double b=LSV(0,0)+LSV(1,1);
     double c=LSV(0,0)*LSV(1,1)-LSV(1,0)*LSV(0,1);
-    
-
-
 
 
     double delta=b*b-4*c;
@@ -185,21 +172,6 @@ Curvature::Curvature(vertex * pvertex)
             Vec3D LD=in->GetLDirection();
         }
         
-        
-        /*  if(2<1)
-         {
-         Vec3D P1(TransferMatLG(0,0),TransferMatLG(1,0),TransferMatLG(2,0));
-         Vec3D P2(TransferMatLG(0,1),TransferMatLG(1,1),TransferMatLG(2,1));
-         
-         if(P1.dot(P1*P2,Normal)<0)
-         {
-         TransferMatLG(0,0)=-TransferMatLG(0,0);
-         TransferMatLG(1,0)=-TransferMatLG(1,0);
-         TransferMatLG(2,0)=-TransferMatLG(2,0);
-         }
-         
-         
-         }*/
 
 //
  #if TEST_MODE == Enabled

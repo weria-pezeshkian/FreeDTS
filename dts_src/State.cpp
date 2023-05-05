@@ -392,7 +392,7 @@ void State::ReadInputFile(std::string file)
             input>>str>>state>>(m_STRUC_ConstantVertexArea.EQSteps)>>(m_STRUC_ConstantVertexArea.Gamma)>>(m_STRUC_ConstantVertexArea.K0);
             if(state=="on" || state=="ON" || state=="On" || state=="yes" || state=="Yes" )
                 m_STRUC_ConstantVertexArea.State = true;
-            Apply_Constant_Area C(m_STRUC_ConstantVertexArea.State,m_STRUC_ConstantVertexArea.EQSteps,m_STRUC_ConstantVertexArea.Gamma,m_STRUC_ConstantVertexArea.K0);
+            Apply_Constant_Vertex_Area C(m_STRUC_ConstantVertexArea.State,m_STRUC_ConstantVertexArea.EQSteps,m_STRUC_ConstantVertexArea.Gamma,m_STRUC_ConstantVertexArea.K0);
             m_Apply_Constant_VertexArea = C;
             
         }

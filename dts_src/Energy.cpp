@@ -289,11 +289,11 @@ double Energy::F2(vertex *v1, vertex *v2, std::vector<double> var)
     Vec3D P1 (v1->GetVXPos(),v1->GetVYPos(),v1->GetVZPos()) ;
     Vec3D P2 (v2->GetVXPos(),v2->GetVYPos(),v2->GetVZPos()) ;
     double l = (P2-P1).norm();
-    Vec3D l1 = N1-N2+(P2-P1)*(1.0/l);
-    if(l1.norm()<l)
+    Vec3D l1 = N2-N1+(P2-P1)*(1.0/l);
+    if(l1.norm()<1)
         beta=-beta;
     
-    E = -e0-e1*cos(N*(m_Angle2D-theta0))-e2*(beta-beta0)*(beta-beta0);
+    E = -e0-e1*cos(N*(m_Angle2D-theta0))+e2*(beta-beta0)*(beta-beta0);
     
     return E;
 }
