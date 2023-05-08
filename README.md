@@ -18,5 +18,6 @@ Niels Bohr Institute,
 University of Copenhagen, 
 Blegdamsvej 17, 2100 Copenhagen, DENMARK
 
+Copy rights: It is available under a CC-BY-NC-ND 4.0 International license
 
 ## Compile useage and tutorials: see User_Manual_Tutorials.pdf
