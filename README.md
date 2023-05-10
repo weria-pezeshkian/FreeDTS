@@ -5,7 +5,7 @@ FreeDTS is software to perform computational research on biomembranes at messocp
 ## Getting started with FreeDTS 
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [About FreeDTS](https://github.com/weria-pezeshkian/FreeDTS/wiki/About-FreeDTS) \
-[Download&Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Compiling-the-source-code) \
+[Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Compiling-the-source-code) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
 [User Manual](https://github.com/weria-pezeshkian/FreeDTS/blob/master/User_Manual_Tutorials.pdf) \
 [Tutorials](https://github.com/weria-pezeshkian/FreeDTS/blob/master/Tutorials.pdf) 
