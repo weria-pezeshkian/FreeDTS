@@ -25,5 +25,3 @@ University of Copenhagen,
 Blegdamsvej 17, 2100 Copenhagen, DENMARK
 
 Copyrights: It is available under a CC-BY-NC-ND 4.0 International license
-
-## Compile useage and tutorials: see User_Manual_Tutorials.pdf
