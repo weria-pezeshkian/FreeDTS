@@ -6,10 +6,10 @@ FreeDTS is software to perform computational research on biomembranes at messocp
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [About FreeDTS](https://github.com/weria-pezeshkian/FreeDTS/wiki/About-FreeDTS) \
 [Download&Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Compiling-the-source-code) \
-[Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) 
+[Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
+[User Manual](https://github.com/weria-pezeshkian/FreeDTS/blob/master/User_Manual_Tutorials.pdf) 
 
-
-## version 1.1
+## version 1.0
 See:
 Mesoscale simulation of biomembranes with FreeDTS
 Weria Pezeshkian, John Hjort Ipsen
