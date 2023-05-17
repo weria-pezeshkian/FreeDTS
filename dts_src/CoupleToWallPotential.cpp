@@ -79,6 +79,32 @@ void CoupleToWallPotential::Initialize(std::vector <vertex *> Apv)
         if(m_h<m_H)
         m_h = m_H;
     }
+    else if(m_PotentialType=="Cylinder" || m_PotentialType=="cylinder")
+    {
+        if(m_Data.size()== 0)
+        {
+            std::cout<<"----> Error: provided data for wall potential is not enough "<<std::endl;
+            exit(0);
+        }
+        else
+        {
+        m_H = f.String_to_Double(m_Data[0]);
+            if(m_H<=0)
+            std::cout<<"----> Warning: The wall will never reaches the targeted value "<<std::endl;
+        }
+        // Finding m_h, we first see how much m_h can be, if it smaller then m_H, then we set it to m_H
+        m_h = 0;
+        for (std::vector<vertex*>::iterator it = Apv.begin() ; it != Apv.end(); ++it)
+        {
+            double z=((*it)->GetVZPos()-m_COG(2));
+            double y=((*it)->GetVYPos()-m_COG(1));
+
+            if(m_h*m_h<y*y+z*z)
+            m_h=sqrt(y*y+z*z);
+        }
+        if(m_h<m_H)
+        m_h = m_H;
+    }
     else if(m_PotentialType=="Cuboid")
     {
         if(m_Data.size()< 3)
@@ -160,6 +186,8 @@ void CoupleToWallPotential::Initialize(std::vector <vertex *> Apv)
     }
     else
     {
+        std::cout<<"----> Error:  it should be. "<<std::endl;
+
         std::cout<<"----> Error:  wall potential type "<<m_PotentialType<<" has not been defined yet. "<<std::endl;
         exit(0);
     }
@@ -197,6 +225,12 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
                 m_h =m_H;
 
             }
+            else if(m_PotentialType=="Cylinder" || m_PotentialType=="cylinder")
+            {
+                sms = "Cylinder, COM_y COM_z and R = " + f.Int_to_String(m_COG(2)) +"  "+ f.Int_to_String(m_COG(1))+"  "+f.Int_to_String(m_h);
+                m_h =m_H;
+                
+            }
             else if(m_PotentialType=="Cuboid")
             {
                 sms = "Cuboid, cmx cmy cmz lx ly lz " +f.Int_to_String(m_COG(0))+" "+f.Int_to_String(m_COG(1))+" "+f.Int_to_String(m_COG(2))+" "+ f.Int_to_String(m_lx)  +"  "+ f.Int_to_String(m_ly) +"  "+ f.Int_to_String(m_lz);
@@ -225,11 +259,13 @@ bool CoupleToWallPotential::CheckVertexMoveWithinWalls(int step, double dx, doub
     Vec3D X1(v->GetVXPos()+dx,v->GetVYPos()+dy,v->GetVZPos()+dz);
     double dx1 = DistanceOfAPointFromBound(X1);
 
+
+        
     if(m_ReachTargetWall==true && APointIsInsideTheBound(X1)==false)
     {
         accept = false;
     }
-    else if(APointIsInsideTheBound(X1)==false && m_PotentialType!="EllipsoidalShell" && m_PotentialType!="TwoFlatParallelWall")
+    else if(APointIsInsideTheBound(X1)==false && m_PotentialType!="EllipsoidalShell" && m_PotentialType!="TwoFlatParallelWall" && m_PotentialType!="Cylinder" && m_PotentialType!="cylinder")
     {
         accept = false;
     }
@@ -261,6 +297,21 @@ void CoupleToWallPotential::MoveTheWallsTowardTheTarget(int step)
             m_h = m_h-DR;
         }
     }
+   else if(m_PotentialType=="Cylinder" || m_PotentialType=="cylinder")
+   {
+       double dx = (m_h-m_H);
+       if(dx<DR)
+       {
+           m_h =m_H;
+           m_ReachTargetWall = true;
+           Nfunction f;
+           sms = "Cylinder, COM_y, COM_Z and R = " + f.Int_to_String(m_COG(1)) +"  "+ f.Int_to_String(m_COG(2)) +"  "+ f.Int_to_String(m_h);
+       }
+       else
+       {
+           m_h = m_h-DR;
+       }
+   }
     else if(m_PotentialType=="Cuboid")
     {
         double dx = (m_lx-m_Lx);
@@ -391,6 +442,17 @@ bool CoupleToWallPotential::APointIsInsideTheBound(Vec3D X)
         Itis = false;
         }
     }
+    else if(m_PotentialType=="Cylinder" || m_PotentialType=="cylinder")
+    {
+        double y=X(1)-m_COG(1);
+        double z=X(2)-m_COG(2);
+
+        double dx = sqrt(y*y+z*z);
+        if(dx>m_h)
+        {
+        Itis = false;
+        }
+    }
     else if(m_PotentialType=="Cuboid")
     {
         double dx = fabs(X(0)-m_COG(0));
@@ -436,6 +498,15 @@ double CoupleToWallPotential::DistanceOfAPointFromBound(Vec3D X)
     {
         Itis = fabs(X(2)-m_COG(2));
  
+    }
+    else if(m_PotentialType=="Cylinder" || m_PotentialType=="cylinder")
+    {
+        
+        double y=X(1)-m_COG(1);
+        double z=X(2)-m_COG(2);
+
+        Itis = sqrt(y*y+z*z);
+
     }
     else if(m_PotentialType=="EllipsoidalShell")
     {
