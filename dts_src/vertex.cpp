@@ -2,6 +2,13 @@
 #define AFX_vertex_CPP_7F4A21C7_C13C_1223_BF2E_124095086234__INCLUDED_
 
 #include <stdio.h>
+#if defined(_WIN32) && !defined(WIN32)
+#define WIN32
+#endif
+#if defined(WIN32)
+#include <algorithm>
+#endif
+
 #include "vertex.h"
 #include "links.h"
 #include "triangle.h"
