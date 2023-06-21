@@ -6,6 +6,7 @@
 #include "vertex.h"
 #include "links.h"
 #include "State.h"
+#include "Curvature.h"
 
 class MC_Simulation_TypeB
 {
@@ -27,8 +28,9 @@ private:
     std::vector<links*>       m_pHalfLinks1;
     std::vector<links*>       m_pHalfLinks2;
     std::vector<inclusion*>   m_pInclusions;
-    
+    Curvature *m_pCurvature;
 private:
+    
     void  CenterIntheBox();
     double  SystemEnergy(State *pState);
     

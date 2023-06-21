@@ -6,6 +6,7 @@
 #include "vertex.h"
 #include "links.h"
 #include "State.h"
+#include "Curvature.h"
 
 class MC_Simulation
 {
@@ -31,7 +32,7 @@ private:
 private:
     void  CenterIntheBox();
     double  SystemEnergy(State *pState);
-    
+    Curvature *m_pCurvature;
     
     // A set of functions to check if a mesh is good for mc with vertices move
     bool    CheckMesh(MESH *pMesh);

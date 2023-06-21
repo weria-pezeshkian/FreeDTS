@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include "VertexMCMove.h"
-#include "Curvature.h"
 #include "State.h"
 VertexMCMove::VertexMCMove()
 {
@@ -25,7 +24,7 @@ VertexMCMove::~VertexMCMove()
 {
     
 }
-void VertexMCMove::MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp)
+void VertexMCMove::MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp, Curvature* pCurv)
 {
     m_LIntEChange.clear();
     m_AVer.clear();
@@ -80,13 +79,13 @@ m_MoveValidity=0;
             m_simplexarea+=(*it)->GetArea();
         }
     }
-   EnergyDifference();
+   EnergyDifference(pCurv);
     m_face=true;
 }
 
 
 
-void VertexMCMove::EnergyDifference()
+void VertexMCMove::EnergyDifference(Curvature* pCurv)
 {
 
 
@@ -136,11 +135,11 @@ bool length =CheckDistnace();
     		}
 		//==== Update vertexes
 
-			Curvature Q(m_pvertex);
+            pCurv->CalculateCurvature(m_pvertex);
     		for (std::vector<vertex *>::iterator it = m_pAVer.begin() ; it != m_pAVer.end(); ++it)
     		{
         
-       			 Curvature P(*it);
+                pCurv->CalculateCurvature(*it);
         
         
     		}

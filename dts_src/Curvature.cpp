@@ -3,7 +3,15 @@
 
 #include "Curvature.h"
 #include "Tensor2.h"
-Curvature::Curvature(vertex * pvertex)
+Curvature::Curvature()
+{
+    
+}
+Curvature::~Curvature()
+{
+
+}
+void Curvature::CalculateCurvature(vertex * pvertex)
 {
     m_pVertex=pvertex;
     std::vector<triangle *> Ntr=m_pVertex->GetVTraingleList();
@@ -270,13 +278,6 @@ Curvature::Curvature(vertex * pvertex)
 
  
 }
-
-
-Curvature::~Curvature()
-{
-
-}
-
 Tensor2 Curvature::Householder(Vec3D N)
 {
     

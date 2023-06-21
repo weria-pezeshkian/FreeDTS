@@ -4,7 +4,6 @@
 #include "PositionRescaleFrameTensionCoupling.h"
 #include "Nfunction.h"
 #include "vertex.h"
-#include "Curvature.h"
 #include "State.h"
 
 /*
@@ -51,7 +50,7 @@ PositionRescaleFrameTensionCoupling::~PositionRescaleFrameTensionCoupling()
 {
     
 }
-bool PositionRescaleFrameTensionCoupling::MCMoveBoxChange(double dr, double * tot_Energy, double temp, int step, GenerateCNTCells *pGenCNT, std::vector<vertex *> pAllVertex, std::vector<links *> pAllLinks, std::vector<triangle* > pAllTri)
+bool PositionRescaleFrameTensionCoupling::MCMoveBoxChange(double dr, double * tot_Energy, double temp, int step, GenerateCNTCells *pGenCNT, std::vector<vertex *> pAllVertex, std::vector<links *> pAllLinks, std::vector<triangle* > pAllTri, Curvature *pCurv)
 {
 m_pAllVertex = pAllVertex;
 m_pAllLinks = pAllLinks;
@@ -130,7 +129,7 @@ double nv=pAllVertex.size();
        					 (*it)->UpdateShapeOperator(m_pBox);
     				}
    			    for (std::vector<vertex *>::iterator it = m_pAllVertex.begin() ; it != m_pAllVertex.end(); ++it)
-        				Curvature P(*it);
+                    pCurv->CalculateCurvature(*it);
 
 
                 double DE_totA = 0;

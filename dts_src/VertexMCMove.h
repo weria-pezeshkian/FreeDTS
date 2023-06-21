@@ -12,6 +12,7 @@
 #include "Inclusion_Interaction_Map.h"
 #include "CouplingtoFixedGlobalCurvature.h"
 #include "SpringPotentialBetweenTwoGroups.h"
+#include "Curvature.h"
 class State;
 class VertexMCMove
 {
@@ -19,13 +20,13 @@ public:
     VertexMCMove();
     VertexMCMove(State *pState);
     ~VertexMCMove();
-    void MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp);
+    void MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp,Curvature* mpcurv);
 
          inline double   GetEnergyDifference()    const    {return m_EnergyDifference;}
          inline int   GetMoveValidity()        {return m_MoveValidity;}
 
 public:
-    void   EnergyDifference();
+    void   EnergyDifference(Curvature* mpcurv);
     void   AccpetMove();
     void   Move();
     void   RejectMove();

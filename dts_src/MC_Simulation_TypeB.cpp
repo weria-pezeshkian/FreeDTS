@@ -8,7 +8,6 @@
 #include "Vec3D.h"
 #include "RNG.h"
 #include "GenerateCNTCells.h"
-#include "Curvature.h"
 #include "Energy.h"
 #include "LinkFlipMC.h"
 #include "WritevtuFiles.h"
@@ -91,8 +90,10 @@ for (std::vector<links *>::iterator it = m_pHalfLinks1.begin() ; it != m_pHalfLi
         (*it)->UpdateShapeOperator(m_pBox);
 }
 //======= Prepare vertex:  area and normal vector and curvature
+    Curvature P;
+    m_pCurvature = &P;
 for (std::vector<vertex *>::iterator it = m_pAllV.begin() ; it != m_pAllV.end(); ++it)
-        Curvature P(*it);
+    m_pCurvature->CalculateCurvature(*it);
     
 //=========================================================================================
 // =================   Calculate Energy at the start of the simulation
@@ -241,7 +242,7 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
 
             if(cwp==true )
             {
-            mc_VMove->MC_MoveAVertex(mcstep,lpvertex,R*dx,R*dy,R*dz,thermal);
+            mc_VMove->MC_MoveAVertex(mcstep,lpvertex,R*dx,R*dy,R*dz,thermal,m_pCurvature);
             VRate+=mc_VMove->GetMoveValidity();
             totalvmove++;
             }
@@ -257,7 +258,7 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
         if(Tlinks->GetMirrorFlag()==true)
         {
             double thermal=Random1.UniformRNG(1.0);
-            mc_LFlip->MC_FlipALink(mcstep,Tlinks,thermal);
+            mc_LFlip->MC_FlipALink(mcstep,Tlinks,thermal,m_pCurvature);
             LRate+=mc_LFlip->GetMoveValidity();
             totallmove++;
         }
@@ -280,7 +281,7 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
         bool move;
         if(FrameTensionCouplingType=="Position_Rescale")
          {
-            move=mc_box->MCMoveBoxChange(RB*dr, tot_Energy, thermal, mcstep, (&CNT),m_pAllV,m_pHalfLinks1,m_pAllT);
+            move=mc_box->MCMoveBoxChange(RB*dr, tot_Energy, thermal, mcstep, (&CNT),m_pAllV,m_pHalfLinks1,m_pAllT,m_pCurvature);
             if(move==true)
             {
                 boxrate=boxrate+1;
@@ -471,7 +472,7 @@ double  MC_Simulation_TypeB::SystemEnergy(State * pState)
     }
     
     for (std::vector<vertex *>::iterator it = m_pAllV.begin() ; it != m_pAllV.end(); ++it)
-        Curvature P(*it);
+        m_pCurvature->CalculateCurvature(*it);
     
     
     Energy En (pState->m_pinc_ForceField);

@@ -8,6 +8,7 @@
 #include "links.h"
 #include "Energy.h"
 #include "Vec3D.h"
+#include "Curvature.h"
 #include "Inclusion_Interaction_Map.h"
 #include "SpringPotentialBetweenTwoGroups.h"
 #include "CouplingtoFixedGlobalCurvature.h"
@@ -34,8 +35,8 @@ public:
 
 
 public:
-    void   MC_FlipALink(int step, links *plinks,  double temp);
-    void   EnergyDifference();
+    void   MC_FlipALink(int step, links *plinks,  double temp, Curvature* mpcurv);
+    void   EnergyDifference(Curvature* mpcurv);
     void   AccpetMove();
     void   PerformMove();
     void   RejectMove();

@@ -15,10 +15,11 @@ class Curvature
 {
 public:
     
-	Curvature(vertex *p);
+	Curvature();
 	 ~Curvature();
 
 public:
+    void CalculateCurvature(vertex *p);
 private:
     vertex * m_pVertex;
 private:

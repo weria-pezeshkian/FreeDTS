@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include "LinkFlipMC.h"
-#include "Curvature.h"
 #include "State.h"
 LinkFlipMC::LinkFlipMC()
 {
@@ -25,7 +24,7 @@ LinkFlipMC::~LinkFlipMC()
 {
     
 }
-void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp)
+void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp, Curvature* pCurv)
 {
     
     m_AVer.clear();
@@ -141,9 +140,9 @@ m_V4=m_Mirror->GetV3();
             m_simplexarea+=(m_T1)->GetArea();
             m_simplexarea+=(m_T2)->GetArea();
     }
-    EnergyDifference();
+    EnergyDifference(pCurv);
 }
-void LinkFlipMC::EnergyDifference()
+void LinkFlipMC::EnergyDifference(Curvature* pCurv)
 {
 double DE=0.0;
 bool condition=CheckFlipCondition();   
@@ -169,10 +168,10 @@ bool condition=CheckFlipCondition();
 		m_L4->UpdateNormal();
         	m_L4->UpdateShapeOperator(m_pBox);
 
-		Curvature P1(m_V1);
-		Curvature P2(m_V2);
-		Curvature P3(m_V3);
-		Curvature P4(m_V4);
+        pCurv->CalculateCurvature(m_V1);
+        pCurv->CalculateCurvature(m_V2);
+        pCurv->CalculateCurvature(m_V3);
+        pCurv->CalculateCurvature(m_V4);
 	}
 
     }

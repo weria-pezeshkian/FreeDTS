@@ -11,6 +11,7 @@
 #include "SpringPotentialBetweenTwoGroups.h"
 #include "CNTCell.h"
 #include "triangle.h"
+#include "Curvature.h"
 //#include "State.h"
 class State;
 class PositionRescaleFrameTensionCoupling
@@ -26,7 +27,7 @@ public:
 
 public:
 
-    bool MCMoveBoxChange(double dr, double * TotalEnergy, double temp, int step, GenerateCNTCells *pGenCNT, std::vector<vertex *>, std::vector<links *>,std::vector<triangle* > );
+    bool MCMoveBoxChange(double dr, double * TotalEnergy, double temp, int step, GenerateCNTCells *pGenCNT, std::vector<vertex *>, std::vector<links *>,std::vector<triangle* > , Curvature *mpcurv);
 
 private:
     void CheckCNTSize();
