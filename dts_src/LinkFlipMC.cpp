@@ -33,7 +33,8 @@ void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp, Curvature* 
     m_V3=m_pLinks->GetV3();
     m_V4=m_Mirror->GetV3();
     bool flip_is_possible = CheckFlipCondition();
-    
+    m_MoveValidity=0;
+
 // ========= old work =====
 if(flip_is_possible==true)
 {
@@ -53,7 +54,6 @@ m_DetaR = 0;
 m_DeltaA = 0;
 m_Thermal=temp;
 m_face=true;
-m_MoveValidity=0;
 m_L1=m_pLinks->GetNeighborLink1();
 m_L2=m_pLinks->GetNeighborLink2();
 m_L3=m_Mirror->GetNeighborLink1();
@@ -61,9 +61,6 @@ m_L4=m_Mirror->GetNeighborLink2();
 
 m_T1=m_pLinks->GetTriangle();
 m_T2=m_Mirror->GetTriangle();
-    
-
-    
 
     if(m_pCFGC->GetState()==true)
     {
@@ -147,10 +144,6 @@ m_T2=m_Mirror->GetTriangle();
             m_simplexarea+=(m_T2)->GetArea();
     }
     EnergyDifference(pCurv);
-}
-else
-{
-    m_MoveValidity = 0;
 }
 }
 void LinkFlipMC::EnergyDifference(Curvature* pCurv)

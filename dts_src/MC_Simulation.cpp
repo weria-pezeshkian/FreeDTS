@@ -3,6 +3,7 @@
 #ifdef _OPENMP
 # include <omp.h>
 #endif
+#include <chrono>
 #include "MC_Simulation.h"
 #include "Nfunction.h"
 #include "Vec3D.h"
@@ -224,6 +225,20 @@ int SigmaPTau = (pState->m_FrameTension).updatePeriod;
 #endif
     #pragma omp critical
     std::cout<<"---> Running simulation from  "<<ini<<" to "<<final<<std::endl;
+    
+    
+    
+#if TIMECOUNT_MS == Enabled
+    std::ofstream link_time_ms;
+    link_time_ms.open("link_time_ms.xvg");
+    std::ofstream vertex_time_ms;
+    vertex_time_ms.open("vertex_time_ms.xvg");
+    std::ofstream box_time_ms;
+    box_time_ms.open("box_time_ms.xvg");
+    int link_time_ms_count = 0;
+    int vertex_time_ms_count = 0;
+    int box_time_ms_count = 0;
+#endif
 for (int mcstep=ini;mcstep<final+1;mcstep++)
 {
     //=========Beginning of one MC move
@@ -251,7 +266,17 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
                 if(Tlinks->GetMirrorFlag()==true)
                 {
                     double thermal=Random1.UniformRNG(1.0);
+                    
+#if TIMECOUNT_MS == Enabled
+auto t_start = std::chrono::high_resolution_clock::now();
+#endif
                     mc_LFlip->MC_FlipALink(mcstep,Tlinks,thermal,m_pCurvature);
+#if TIMECOUNT_MS == Enabled
+auto t_end = std::chrono::high_resolution_clock::now();
+double elapsed_time_ms = std::chrono::duration<double, std::milli>(t_end-t_start).count();
+link_time_ms_count++;
+link_time_ms<<link_time_ms_count<<"  "<<1000*elapsed_time_ms<<"   "<<mc_LFlip->GetMoveValidity()<<"\n";
+#endif
                     LRate+=mc_LFlip->GetMoveValidity();
                     totallmove++;
                 }
@@ -280,7 +305,17 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
 
                     if(cwp==true )
                     {
-                    mc_VMove->MC_MoveAVertex(mcstep,lpvertex,R*dx,R*dy,R*dz,thermal,m_pCurvature);
+                        
+#if TIMECOUNT_MS == Enabled
+auto t_startv = std::chrono::high_resolution_clock::now();
+#endif
+                        mc_VMove->MC_MoveAVertex(mcstep,lpvertex,R*dx,R*dy,R*dz,thermal,m_pCurvature);
+#if TIMECOUNT_MS == Enabled
+auto t_endv = std::chrono::high_resolution_clock::now();
+double elapsed_time_msv = std::chrono::duration<double, std::milli>(t_endv-t_startv).count();
+vertex_time_ms_count++;
+vertex_time_ms<<vertex_time_ms_count<<"  "<<1000*elapsed_time_msv<<"  "<<mc_VMove->GetMoveValidity()<<"\n";
+#endif
                     VRate+=mc_VMove->GetMoveValidity();
                     totalvmove++;
                     }
@@ -307,7 +342,16 @@ for (int mcstep=ini;mcstep<final+1;mcstep++)
             bool move;
             if(FrameTensionCouplingType=="Position_Rescale")
              {
-                move=mc_box->MCMoveBoxChange(RB*dr, tot_Energy, thermal, mcstep, (&CNT),m_pAllV,m_pHalfLinks1,m_pAllT,m_pCurvature);
+#if TIMECOUNT_MS == Enabled
+auto t_startb = std::chrono::high_resolution_clock::now();
+#endif
+                 move=mc_box->MCMoveBoxChange(RB*dr, tot_Energy, thermal, mcstep, (&CNT),m_pAllV,m_pHalfLinks1,m_pAllT,m_pCurvature);
+#if TIMECOUNT_MS == Enabled
+auto t_endb = std::chrono::high_resolution_clock::now();
+double elapsed_time_msb = std::chrono::duration<double, std::milli>(t_endb-t_startb).count();
+box_time_ms_count++;
+box_time_ms<<box_time_ms_count<<"  "<<1000*elapsed_time_msb/double(m_pAllV.size())<<"  "<<move<<"\n";
+#endif
                 if(move==true)
                 {
                     boxrate=boxrate+1;
