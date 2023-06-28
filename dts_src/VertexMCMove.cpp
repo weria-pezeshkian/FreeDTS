@@ -26,6 +26,18 @@ VertexMCMove::~VertexMCMove()
 }
 void VertexMCMove::MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp, Curvature* pCurv)
 {
+    m_pvertex=pvertex;
+    m_dx=dx;
+    m_dy=dy;
+    m_dz=dz;
+    m_oldX=m_pvertex->GetVXPos();
+    m_oldY=m_pvertex->GetVYPos();
+    m_oldZ=m_pvertex->GetVZPos();
+    m_X=m_oldX+m_dx;
+    m_Y=m_oldY+m_dy;
+    m_Z=m_oldZ+m_dz;
+    
+    
     m_LIntEChange.clear();
     m_AVer.clear();
     m_RingLinks.clear();
@@ -35,26 +47,19 @@ void VertexMCMove::MC_MoveAVertex(int step, vertex *pvertex, double dx, double d
     m_pAVer.clear();
     
 m_step = step;
-m_pvertex=pvertex;
-    
     m_DetaR = 0;
     m_DeltaA = 0;
-m_dx=dx;
-m_dy=dy;
-m_dz=dz;
 m_oldEnergy=0.0;
 m_pAVer=m_pvertex->GetVNeighbourVertex();
 m_ChangeCNT=false;
 m_Thermal=temp;
 m_MoveValidity=0;
-    m_oldX=m_pvertex->GetVXPos();
-    m_oldY=m_pvertex->GetVYPos();
-    m_oldZ=m_pvertex->GetVZPos();
-	m_X=m_oldX+m_dx;
-	m_Y=m_oldY+m_dy;
-	m_Z=m_oldZ+m_dz;
+
+    bool length =CheckDistnace();
 
 //=========== This can be more optimised maybe; why do I need this?
+if(length==true)
+{
     m_simplexarea = 0;
     m_simplexvolume = 0;
     if((m_pState->GetVolumeCoupling())->GetState()==true || (m_pState->GetOsmotic_Pressure())->GetState()==true || (m_pState->GetApply_Constant_Area())->GetState()==true)
@@ -80,23 +85,13 @@ m_MoveValidity=0;
         }
     }
    EnergyDifference(pCurv);
-    m_face=true;
+    m_face=true;  // I do not remember why I need this (what I have done :) ). This will only affect next move not this one, so why it is not defined at the begining?????
+    
+}//----> if(length==true)
 }
-
-
-
 void VertexMCMove::EnergyDifference(Curvature* pCurv)
 {
-
-
 double DE=0.0;
-bool length =CheckDistnace();
-
-
-
-	if (length==true)
-	{
-
 		Move();
 		//==== Update the ring triangle normal and making a copy in case the move got rejected
 		std::vector<triangle *> pT=m_pvertex->GetVTraingleList();
@@ -161,22 +156,8 @@ bool length =CheckDistnace();
             }
 
         }
-	
-	}
 
-/*
-if(length==false)
-{
-    std::cout<<" rejected by length \n";
-
-}
-else if (m_face==false)
-{
-   std::cout<<" rejected by face \n";
-
-}*/
-
-if(m_face==true && length==true)
+if(m_face==true)
 {
 Energy EE (m_pInc);
 double NewEnergy = EE.Energy_OneVertexMove(m_pvertex);
@@ -196,10 +177,7 @@ double NewEnergy = EE.Energy_OneVertexMove(m_pvertex);
         double e2 = m_pSPBTG->GetEnergy();
         harmonicde = e2-e1;
     }
-
 DE=NewEnergy-m_oldEnergy;
-
-
     double eG = 0;
     if(m_pCFGC->GetState()==true)
     {
@@ -246,11 +224,7 @@ DE=NewEnergy-m_oldEnergy;
         
       //  std::cout<<DE_OP<<"  "<<m_simplexvolume<<"  "<<newsimplexvolume<<"  "<<m_simplexvolume-newsimplexvolume<<"\n";
     }
-    
-
     //========
-    
-    
                 double diff_energy = m_Beta*(DE+eG+DEPV+harmonicde+DE_OP+DE_totA);
             //    std::cout<<DE<<"  "<<eG<<"  "<<DEPV<<"  "<<harmonicde<<"  "<<DE_OP<<"  \n";
             	if(diff_energy<=0 )
@@ -285,14 +259,12 @@ DE=NewEnergy-m_oldEnergy;
                     //
             	}
 
-m_EnergyDifference=DE;
+        m_EnergyDifference=DE;
 }
-else if(length==true)  /// meaning that face is false
-{
+else // if(m_face==true)
 RejectMove();
+    
 }
-}
-
 void VertexMCMove::Move()
 {
 
@@ -314,10 +286,6 @@ void VertexMCMove::Move()
            m_DetaR+=(C.at(0)+C.at(1))*area;
        }
    }
-
-    
-    
-    
 	m_oldEnergy=m_pvertex->GetEnergy();
 	m_vertex=(*m_pvertex);
     // Making a copy of all orginal vertices: note, we cannot use this list to replace the orginal one, all pointing pointers will go wrong, just for later use to go back to what it was
@@ -326,18 +294,10 @@ void VertexMCMove::Move()
 		    m_AVer.push_back(*(*it));
         	m_oldEnergy+=(*it)->GetEnergy();
         }
-	
-
-
-
-    
     m_pvertex->UpdateVXPos(m_X);
 	m_pvertex->UpdateVYPos(m_Y);
 	m_pvertex->UpdateVZPos(m_Z);
-    
-    
 
-    
     std::vector<links *> pL=m_pvertex->GetVLinkList();
     for (std::vector<links *>::iterator it = pL.begin() ; it != pL.end(); ++it)
     {
@@ -380,26 +340,17 @@ void VertexMCMove::Move()
         m_oldEnergy+=2*((*it)->GetIntEnergy());
         m_LIntEChange.push_back(*(*it));
     }
-    
-
-    
-
 }
 void VertexMCMove::AccpetMove()
 {
 
     if(m_ChangeCNT==true)
-    {
-    
         UppdateVertexCNTCell();
-    }
+   
     
     if(m_pCFGC->GetState()==true)
-    {
         m_pCFGC->UpdateEnergyChange(-m_DeltaA,-m_DetaR);
-    }
 
-    
 }
 
 void VertexMCMove::UppdateVertexCNTCell()
