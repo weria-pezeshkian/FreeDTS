@@ -26,7 +26,17 @@ LinkFlipMC::~LinkFlipMC()
 }
 void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp, Curvature* pCurv)
 {
+    m_pLinks=plinks;
+    m_Mirror=m_pLinks->GetMirrorLink();
+    m_V1=m_pLinks->GetV1();
+    m_V2=m_pLinks->GetV2();
+    m_V3=m_pLinks->GetV3();
+    m_V4=m_Mirror->GetV3();
+    bool flip_is_possible = CheckFlipCondition();
     
+// ========= old work =====
+if(flip_is_possible==true)
+{
     m_AVer.clear();
     m_AT.clear();
     m_AL.clear();
@@ -35,14 +45,13 @@ void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp, Curvature* 
     m_pLIntEChange.clear();
     
     
-    Vec3D *Box = m_pBox;
+Vec3D *Box = m_pBox;
 m_step = step;
 m_oldEnergy=0.0;
-m_pLinks=plinks;
+
 m_DetaR = 0;
 m_DeltaA = 0;
 m_Thermal=temp;
-m_Mirror=m_pLinks->GetMirrorLink();
 m_face=true;
 m_MoveValidity=0;
 m_L1=m_pLinks->GetNeighborLink1();
@@ -53,10 +62,7 @@ m_L4=m_Mirror->GetNeighborLink2();
 m_T1=m_pLinks->GetTriangle();
 m_T2=m_Mirror->GetTriangle();
     
-m_V1=m_pLinks->GetV1();
-m_V2=m_pLinks->GetV2();
-m_V3=m_pLinks->GetV3();
-m_V4=m_Mirror->GetV3();
+
     
 
     if(m_pCFGC->GetState()==true)
@@ -142,19 +148,18 @@ m_V4=m_Mirror->GetV3();
     }
     EnergyDifference(pCurv);
 }
+else
+{
+    m_MoveValidity = 0;
+}
+}
 void LinkFlipMC::EnergyDifference(Curvature* pCurv)
 {
-double DE=0.0;
-bool condition=CheckFlipCondition();   
-
-    if(condition==true)
-    {	
-	PerformMove();    
+        double DE=0.0;
+        PerformMove();
     	m_T1->UpdateNormal_Area(m_pBox);
     	m_T2->UpdateNormal_Area(m_pBox);
-
-
-	m_face=CheckFaceAngle();
+        m_face=CheckFaceAngle();
 	if(m_face==true)
 	{
 		m_pLinks->UpdateNormal();
@@ -174,9 +179,8 @@ bool condition=CheckFlipCondition();
         pCurv->CalculateCurvature(m_V4);
 	}
 
-    }
 
-if(m_face==true && condition==true)
+if(m_face==true)
 { 
 	Energy EE(m_pInc);
 	double NewEnergy=EE.Energy_OneLinkFlip(m_pLinks);
@@ -245,7 +249,7 @@ if(m_face==true && condition==true)
         
            if((m_pState->GetApply_Constant_Area())->GetState()==true)
             DE_totA = (m_pState->GetApply_Constant_Area())->GetEnergyChange(m_step,m_simplexarea,newsimplexarea);
-    }
+      }
                 double diff_energy = m_Beta*(DE+eG+DEPV+DE_OP+DE_totA);
                 
                 //std::cout<<DE<<"  "<<eG<<"  "<<DEPV<<"   "<<DE_OP<<"  \n";
@@ -275,7 +279,7 @@ if(m_face==true && condition==true)
 
             	}
 }
-else if(condition==true)
+else // if(m_face==true)
 {
 RejectMove();
 }
@@ -371,9 +375,7 @@ m_pLinks->Flip();
 bool LinkFlipMC::CheckFlipCondition()
 {
 Vec3D Box=(*m_pBox);
-      bool condition=true;   
-
-
+    bool condition=true;
 
 //==================== check if the vertex has more then three link
 	std::vector <vertex *> list1=m_V1->GetVNeighbourVertex();
@@ -383,89 +385,63 @@ Vec3D Box=(*m_pBox);
 
 	if(list1.size()<4 || list2.size()<4 )
 	condition=false;
-
-//	if(list3.size()>9 || list4.size()>9 )
-//	condition=false;
-
+    
 //==================== check if this link already exist
    if(condition==true)
    {
-       
     std::vector <vertex *> mvn=m_V3->GetVNeighbourVertex();
-    for (std::vector<vertex *>::iterator it = mvn.begin() ; it != mvn.end(); ++it)
-    {
-        
-        if((*it)->GetVID()==m_V4->GetVID())
-        {
-            condition=false;
-          //  std::cout<<"wiered \n";
-            break;
-        }
-    }
-       
+       for (std::vector<vertex *>::iterator it = mvn.begin() ; it != mvn.end(); ++it)
+       {
+           if((*it)->GetVID()==m_V4->GetVID())
+           {
+               condition=false;
+               break;
+           }
+       }
    }
-    
-    
 //==================== check the length of the new link
     if(condition==true)
     {
  		double x1=m_V3->GetVXPos();
 		double y1=m_V3->GetVYPos();
 		double z1=m_V3->GetVZPos();
-    		double x2=m_V4->GetVXPos();
-    		double y2=m_V4->GetVYPos();
-    		double z2=m_V4->GetVZPos();
+        double x2=m_V4->GetVXPos();
+        double y2=m_V4->GetVYPos();
+        double z2=m_V4->GetVZPos();
 		double dx=x2-x1;
         if(fabs(dx)>Box(0)/2.0)
         {
-            
-            
             if(dx<0)
                 dx=Box(0)+dx;
             else if(dx>0)
                 dx=dx-Box(0);
-            
-
-            
         }
 		double dy=y2-y1;
         if(fabs(dy)>Box(1)/2.0)
         {
-            
-            
             if(dy<0)
                 dy=Box(1)+dy;
             else if(dy>0)
                 dy=dy-Box(1);
-            
-
-
-            
         }
 		double dz=z2-z1;
         if(fabs(dz)>Box(2)/2.0)
         {
-            
-            
             if(dz<0)
                 dz=Box(2)+dz;
             else if(dz>0)
                 dz=dz-Box(2);
-            
-          
-
-            
         }
 		double l2=dx*dx+dy*dy+dz*dz;
 
        if(l2>(*m_pLmax2) || l2<(*m_pLmin2))
-	condition=false;
+           condition=false;
         
         
         if(l2<(*m_pLmin2))
-            std::cout<<"l= "<<l2<<"This should not happen error 20120 \n";
+        std::cout<<"l= "<<l2<<"This should not happen error 20120 \n";
     }
-//==================== check if the v3 of the links is same
+    
 return condition;
 }
 void LinkFlipMC::RejectMove()
