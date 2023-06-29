@@ -1,0 +1,14 @@
+Integrator                      = MC
+MC_Moves                        = 1 1 1
+Initial_Step                    = 1
+Box_Centering_F			= 0
+Final_Step                      = 10
+Display_periodic                = 1000
+OutPutEnergy_periodic           = 100
+Restart_periodic                = 10000
+Kappa                           = 20 0
+OutPutTRJ_TSI                   = 1000  10  TrjTSI
+GeneralOutputFilename           = output
+Cell_Size                       = 2.5 2.6 2.5
+CoupleToRigidWalls              = off EllipsoidalShell  10000  10 10 10  0.01
+
