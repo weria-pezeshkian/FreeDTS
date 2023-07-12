@@ -26,7 +26,7 @@ if (Exe.size()<3)
 {
         std::cout<<" Error:  (a) unrecognized exacutable name --->"<<Exe<<" :( "<<std::endl;
 }
-else if (Exe.size()>3 && Exe.at(Exe.size()-4)!='/')
+else if (Exe.size()>3 && (Exe.at(Exe.size()-4)!='/' && Exe.at(Exe.size()-4)!='\\' ))
 {
         std::cout<<" Error:  (b) unrecognized exacutable name --->"<<Exe<<" :( "<<std::endl;
 }

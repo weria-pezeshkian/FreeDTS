@@ -1,6 +1,13 @@
 
 
 #include <stdio.h>
+
+#if defined(_WIN32) && !defined(WIN32)
+#define WIN32
+#endif
+#if defined(WIN32)
+#include <algorithm>
+#endif
 #include "CNTCell.h"
 CNTCell::CNTCell(int id, int i, int j, int k)
 {
