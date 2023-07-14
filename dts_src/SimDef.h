@@ -39,6 +39,6 @@
 
 #define TEST_MODE  Disabled
 #define DEBUG_MODE  Disabled
-#define TIMECOUNT_MS  Enabled
+#define TIMECOUNT_MS  Disabled
 #define RNGTYPE  UNIFROMTYPE0
 #define BACKMAP  Enabled
