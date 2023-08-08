@@ -186,8 +186,8 @@ double nv=pAllVertex.size();
                         eG = m_pCFGC->CalculateEnergyChange(-m_DeltaA,-m_DetaR);
 
                     }
-                            double diff_energy = m_Beta*(DE+DEArea+eG);
-      						if(pow((AreaRatio),nv)*exp(-diff_energy)>temp )
+                            double diff_energy = m_Beta*(DE-DEArea+eG);
+      						if(pow((AreaRatio),nv)*exp(-m_Beta*diff_energy)>temp )
      						{
                                 if(m_pCFGC->GetState()==true)
                                 m_pCFGC->UpdateEnergyChange(-m_DeltaA,-m_DetaR);
