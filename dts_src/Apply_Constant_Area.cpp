@@ -53,12 +53,12 @@ void Apply_Constant_Area::Initialize(std::vector<triangle *> pTriangle)
 
     m_TotalArea = A;
 
-   double A0 = double(pTriangle.size())*sqrt(3)/4.0; /// a_t = sqrt(3)/4.0*l^2 ;; l=sqrt(1-3)
+   double A0 = m_NT*sqrt(3)/4.0; /// a_t = sqrt(3)/4.0*l^2 ;; l=sqrt(1-3)
    
    
    m_A0 = (1+2*m_Gamma)*A0;   // selecting between 1-3
     
-    m_K0 = m_K0/m_NT;       // making the K0 t dependent
+    m_K0 = m_K0/m_NT/3*16;       // making the K0 t dependent   E=0.5*N*K*(A/A0-1)^2; K=0.5*N*K/A0^2==> E=0.5*N*K/A0^2(A-A0)^2
    
 }
 double Apply_Constant_Area::GetEnergyChange(int step, double oldarea, double newarea)
