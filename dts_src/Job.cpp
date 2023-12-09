@@ -21,7 +21,6 @@ Job::Job(std::vector <std::string> argument)
 std::string Exe=argument.at(0);
     std::string ExeName = "DTS";
     Nfunction f;
-
 if (Exe.size()<3)
 {
         std::cout<<" Error:  (a) unrecognized exacutable name --->"<<Exe<<" :( "<<std::endl;
@@ -112,7 +111,7 @@ std::cout<<"thread id "<<Thread_ID<<" total no threead "<<omp_get_num_threads()<
             //========: Runing simulation
             for (int pt_step = 0; pt_step<exchange_step_length;pt_step++)
             {
-                    S.m_Initial_Step = itime + pt_step*PT_steps;
+                    S.m_Initial_Step = itime + pt_step*PT_steps;   // t0+i*length_of_exchange
                     S.m_Final_Step = itime + (pt_step+1)*PT_steps;
                     
                     // set the tempratur eof each state
@@ -127,6 +126,7 @@ std::cout<<"thread id "<<Thread_ID<<" total no threead "<<omp_get_num_threads()<
                     //change temprature
                     #pragma omp single
                     {
+                        // the heart of parallel temparing method
                         for (int c=0;c<betas.size()-1;c++)
                         {
                             double b1 = betas[c];
