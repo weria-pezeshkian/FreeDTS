@@ -1,0 +1,17 @@
+include  M.gro
+[Lipids List]
+Domain 0
+POPC 0.59 0.59       0.645
+POPE 0.2 0.2         0.603
+POPI 0.1 0.1         0.645
+POPS 0.02 0.02       0.66
+CHOL 0.045 0.045     0.43
+CDL2 0.045 0.045     1.09
+End 
+; proteinname typeid ratio phi theta z0
+[Protein List]
+M 1 0.01 0 0 -3.7
+End Protein
+
+
+
