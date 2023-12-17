@@ -14,7 +14,8 @@ Please always download the latest version as some cosmetic changes will be done 
 [Source code map](https://github.com/weria-pezeshkian/FreeDTS/blob/master/code_map.pdf) 
 
 ## version 1.0
-See:
+[![DOI:10.5281/zenodo.10397542](https://zenodo.org/badge/DOI/10.5281/zenodo.10397542.svg)](https://doi.org/10.5281/zenodo.10397542)\
+See also:
 Mesoscale simulation of biomembranes with FreeDTS
 Weria Pezeshkian, John Hjort Ipsen
 doi: https://doi.org/10.1101/2023.05.05.539540
