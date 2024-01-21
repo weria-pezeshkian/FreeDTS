@@ -16,9 +16,9 @@ Please always download the latest version as some cosmetic changes will be done 
 ## version 1.0
 [![DOI:10.5281/zenodo.10397542](https://zenodo.org/badge/DOI/10.5281/zenodo.10397542.svg)](https://doi.org/10.5281/zenodo.10397542)\
 See also:
-Mesoscale simulation of biomembranes with FreeDTS
-Weria Pezeshkian, John Hjort Ipsen
-doi: https://doi.org/10.1101/2023.05.05.539540
+Weria Pezeshkian, John H. Ipsen;
+[Mesoscale simulation of biomembranes with FreeDTS](https://www.nature.com/articles/s41467-024-44819-w)
+Nature Communications 15 548(2024)
 
 
 ## Developer and Contribution 
