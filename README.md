@@ -19,6 +19,7 @@ See also:
 Weria Pezeshkian, John H. Ipsen;
 [Mesoscale simulation of biomembranes with FreeDTS](https://www.nature.com/articles/s41467-024-44819-w)
 Nature Communications 15 548(2024)
+<img width="281" alt="Screenshot 2024-01-27 at 17 34 26" src="https://github.com/weria-pezeshkian/FreeDTS/assets/47776510/123c34a5-2994-4788-8320-752ac24ed2fb">
 
 
 ## Developer and Contribution 
