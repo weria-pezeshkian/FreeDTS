@@ -26,8 +26,6 @@ PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling()
 PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(double sigmap,State *pstate)
 {
 
-    m_DetaR = 0;
-    m_DeltaA = 0;
     m_pInc=pstate->m_pinc_ForceField;
     Nfunction f;
     m_pBox=(pstate->m_pMesh)->m_pBox;
@@ -183,14 +181,14 @@ double nv=pAllVertex.size();
                             DetaR-=(C.at(0)+C.at(1))*area;
                         }
 
-                        eG = m_pCFGC->CalculateEnergyChange(-m_DeltaA,-m_DetaR);
+                        eG = m_pCFGC->CalculateEnergyChange(-DeltaA,-DetaR);
 
                     }
                             double diff_energy = (DE-DEArea+eG);
       						if(pow((AreaRatio),nv)*exp(-m_Beta*diff_energy)>temp )
      						{
                                 if(m_pCFGC->GetState()==true)
-                                m_pCFGC->UpdateEnergyChange(-m_DeltaA,-m_DetaR);
+                                m_pCFGC->UpdateEnergyChange(-DeltaA,-DetaR);
 
       						}
       						else
