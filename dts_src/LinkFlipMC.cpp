@@ -7,8 +7,7 @@ LinkFlipMC::LinkFlipMC()
 {
     
 }
-LinkFlipMC::LinkFlipMC(State *pState)
-{
+LinkFlipMC::LinkFlipMC(State *pState) {
     m_pState = pState;
     m_pBox = (pState->m_pMesh)->m_pBox;
     m_pminAngle = &(m_pState->m_MinFaceAngle);
@@ -18,7 +17,6 @@ LinkFlipMC::LinkFlipMC(State *pState)
     m_pTotEnergy=&(m_pState->m_TotEnergy);
     m_pCFGC = m_pState->GetGlobalCurvature();
     m_step = 0;
-    m_Beta = m_pState->m_Beta;
 }
 LinkFlipMC::~LinkFlipMC()
 {
@@ -26,6 +24,8 @@ LinkFlipMC::~LinkFlipMC()
 }
 void LinkFlipMC::MC_FlipALink(int step, links *plinks,  double temp, Curvature* pCurv)
 {
+    m_Beta = m_pState->m_Beta;
+
     m_pLinks=plinks;
     m_Mirror=m_pLinks->GetMirrorLink();
     m_V1=m_pLinks->GetV1();

@@ -8,12 +8,10 @@
 InclusionMCMove::InclusionMCMove ()
 {
 }
-InclusionMCMove::InclusionMCMove (State *pState)
-{
+InclusionMCMove::InclusionMCMove (State *pState)  {
     m_pState = pState;
     m_pInt     = m_pState->m_pinc_ForceField;
     m_ptotenergy=&(m_pState->m_TotEnergy);
-    m_Beta = m_pState->m_Beta;
 }
 InclusionMCMove::~InclusionMCMove()
 {
@@ -21,6 +19,8 @@ InclusionMCMove::~InclusionMCMove()
 }
 void InclusionMCMove::MC_Move_AnInclusion(inclusion *pinc, RNG* Random)
 {
+    m_Beta = m_pState->m_Beta;
+
     m_LIntEChange.clear();
     m_pLIntEChange.clear();
     

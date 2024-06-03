@@ -23,8 +23,7 @@ PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling()
     
     
 }
-PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(double sigmap,State *pstate)
-{
+PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(double sigmap,State *pstate)  {
 
     m_pInc=pstate->m_pinc_ForceField;
     Nfunction f;
@@ -38,7 +37,6 @@ PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(double 
     m_pminAngle = &(pstate->m_MinFaceAngle);
     m_step = 0;
     m_pCFGC = pstate->GetGlobalCurvature();
-    m_Beta = pstate->m_Beta;
     // we do not need this, since it does not matter 
     //m_pSPBTG = pstate->Get2GroupHarmonic();
 }
@@ -50,6 +48,10 @@ PositionRescaleFrameTensionCoupling::~PositionRescaleFrameTensionCoupling()
 }
 bool PositionRescaleFrameTensionCoupling::MCMoveBoxChange(double dr, double * tot_Energy, double temp, int step, GenerateCNTCells *pGenCNT, std::vector<vertex *> pAllVertex, std::vector<links *> pAllLinks, std::vector<triangle* > pAllTri, Curvature *pCurv)
 {
+    
+    m_Beta = m_pState->m_Beta;
+
+    
 m_pAllVertex = pAllVertex;
 m_pAllLinks = pAllLinks;
 m_pAllTriangle = pAllTri;

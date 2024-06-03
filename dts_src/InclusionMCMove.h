@@ -33,7 +33,7 @@ private:
 
 Inclusion_Interaction_Map * m_pInt;
     State *m_pState;
-    double m_Beta;
+    double  m_Beta;
     inclusion * m_pInc;
     double * m_ptotenergy;
 private:

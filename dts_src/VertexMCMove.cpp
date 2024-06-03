@@ -3,11 +3,9 @@
 #include <stdio.h>
 #include "VertexMCMove.h"
 #include "State.h"
-VertexMCMove::VertexMCMove()
-{
+VertexMCMove::VertexMCMove()  {
 }
-VertexMCMove::VertexMCMove(State *pState)
-{
+VertexMCMove::VertexMCMove(State *pState) {
     m_pState = pState;
     m_pBox = (pState->m_pMesh)->m_pBox;
     m_pminAngle = &(m_pState->m_MinFaceAngle);
@@ -17,7 +15,6 @@ VertexMCMove::VertexMCMove(State *pState)
     m_pTotEnergy=&(m_pState->m_TotEnergy);
     m_pCFGC = m_pState->GetGlobalCurvature();
     m_pSPBTG = m_pState->Get2GroupHarmonic();
-    m_Beta =   m_pState->m_Beta;
     m_step = 0;
 }
 VertexMCMove::~VertexMCMove()
@@ -26,6 +23,7 @@ VertexMCMove::~VertexMCMove()
 }
 void VertexMCMove::MC_MoveAVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp, Curvature* pCurv)
 {
+    m_Beta = m_pState->m_Beta;
     m_pvertex=pvertex;
     m_dx=dx;
     m_dy=dy;
