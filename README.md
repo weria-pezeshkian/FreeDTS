@@ -9,9 +9,8 @@ Please always download the latest version as some cosmetic changes will be done 
 [About FreeDTS](https://github.com/weria-pezeshkian/FreeDTS/wiki/About-FreeDTS) \
 [Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Compiling-the-source-code) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
-[User Manual](https://github.com/weria-pezeshkian/FreeDTS/blob/master/User_Manual_Tutorials.pdf) \
-[Tutorials](https://github.com/weria-pezeshkian/FreeDTS/blob/master/Tutorials.pdf) \
-[Source code map](https://github.com/weria-pezeshkian/FreeDTS/blob/master/code_map.pdf) 
+[User Manual](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
+[Tutorials](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-(version-1)) 
 
 ## version 1.0
 [![DOI:10.5281/zenodo.10397542](https://zenodo.org/badge/DOI/10.5281/zenodo.10397542.svg)](https://doi.org/10.5281/zenodo.10397542)\
