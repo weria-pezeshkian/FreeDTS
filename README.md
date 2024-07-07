@@ -7,7 +7,7 @@ Please always download the latest version as some cosmetic changes will be done 
 ## Getting started with FreeDTS 
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [About FreeDTS](https://github.com/weria-pezeshkian/FreeDTS/wiki/About-FreeDTS) \
-[Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Compiling-the-source-code) \
+[Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
 [User Manual](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
 [Tutorials](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-(version-1)) 
