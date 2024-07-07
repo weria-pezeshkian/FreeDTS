@@ -10,7 +10,7 @@ Please always download the latest version as some cosmetic changes will be done 
 [Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
 [User Manual v1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
-[User Manual v2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
+[User Manual v2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-2) \
 [Tutorials](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-(version-1)) 
 
 ## version 1.0
