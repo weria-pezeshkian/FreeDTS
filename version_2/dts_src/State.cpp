@@ -413,8 +413,11 @@ while (input >> firstword) {
             }
 //---- Volume_Constraint data
         else if(firstword == AbstractVolumeCoupling::GetBaseDefaultReadName())   { // Volume_Constraint
-            
             input >> str >> type;
+            if(type != "No"){
+                m_pVAHCalculator->MakeVolumeActive();
+                m_pVAHCalculator->MakeAreaActive();
+            }
             if(type == VolumeCouplingSecondOrder::GetDefaultReadName()) { // SecondOrderCoupling
                 
                 double dp,k,vt;
@@ -437,16 +440,24 @@ while (input >> firstword) {
         }
 //---- end Volume_Constraint
 //---- global curvature
-        else if(firstword == "GlobalCurvature") {
-            double k,gc0;
-            input>>str>>type>>k>>gc0;
+        else if(firstword == AbstractGlobalCurvature::GetBaseDefaultReadName()) {
+
+            input>>str>>type;
+            
+            if(type != "No"){
+                m_pVAHCalculator->MakeGlobalCurvatureActive();
+                m_pVAHCalculator->MakeAreaActive();
+            }
+            
             if(type == CouplingGlobalCurvatureToHarmonicPotential::GetDefaultReadName()) {
+                double k,gc0;
+                input>>k>>gc0;
                 m_pCoupleGlobalCurvature = new CouplingGlobalCurvatureToHarmonicPotential(m_pVAHCalculator,k,gc0);
             }
-            else if(type == "No") {
+            else if(type == NoGlobalCurvature::GetDefaultReadName()) {
             }
             else {
-                std::cout<<"---> error: unknown for global curvature: "<< type<<"\n";
+                std::cout<<AbstractGlobalCurvature::GetErrorMessage(type)<<"\n";
                 m_NumberOfErrors++;
                 return false;
             }
@@ -455,9 +466,10 @@ while (input >> firstword) {
         }
 // -- global area coupling
         else if(firstword == "TotalAreaCoupling"){
-            
             input>>str>>type;
-
+            if(type != "No"){
+                m_pVAHCalculator->MakeAreaActive();
+            }
             if(type ==  CouplingTotalAreaToHarmonicPotential::GetDefaultReadName()){
                 double gamma , k0;
                 input>>k0>>gamma;
@@ -519,6 +531,23 @@ while (input >> firstword) {
 
         }
 // end open edge treatment
+        else if(firstword == AbstractDynamicTopology::GetBaseDefaultReadName()){
+            input >> str >> type;
+            if (type == Three_Edge_Scission::GetDefaultReadName() ) {
+                int period = 0;
+                input >>  period;
+
+                m_pDynamicTopology = new Three_Edge_Scission(period, this);
+            }
+            else if(type == ConstantTopology::GetDefaultReadName()){
+                m_pDynamicTopology = new ConstantTopology;
+            }
+            else{
+                std::cout<<AbstractDynamicTopology::GetErrorMessage(type);
+            }
+            // Consume remaining input line
+            getline(input, rest);
+        }
 // InclusionConversion and ActiveTwoStateInclusion
         else if(firstword == AbstractInclusionConversion::GetBaseDefaultReadName()) {
             input >> str >> type;
@@ -689,19 +718,6 @@ while (input >> firstword) {
                 m_NumberOfErrors++;
                 return false;
             }
-        }
-        else if(firstword == "Dynamic_Topology")
-        {
-            int period = 0;
-
-            input >> str >> type >> period;
-
-            if (type == "Scission_By3Edges") {
-                
-                m_pDynamicTopology = new Three_Edge_Scission(period, this);
-            }
-            // Consume remaining input line
-            getline(input, rest);
         }
         else if(firstword == "TimeSeriesData_Period") { // TimeSeriesData
             int period;
@@ -975,11 +991,12 @@ bool State::Initialize(){
     m_pInclusionConversion->Initialize(this);
     m_pDynamicTopology->Initialize();
     m_pOpenEdgeEvolution->Initialize();
-
-     m_pTotalAreaCoupling->Initialize(this);
-     m_pVolumeCoupling->Initialize(this);
-    m_pCoupleGlobalCurvature->Initialize(this);
+    
+    
     m_pVAHCalculator->Initialize(this);
+    m_pTotalAreaCoupling->Initialize(this);
+    m_pVolumeCoupling->Initialize(this);
+    m_pCoupleGlobalCurvature->Initialize(this);
    // m_pForceonVerticesfromInclusions this does not have one
     m_pApplyConstraintBetweenGroups->Initialize();
     m_pSimulation->Initialize();

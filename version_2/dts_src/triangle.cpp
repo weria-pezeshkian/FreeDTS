@@ -167,6 +167,49 @@ void triangle::UpdateID(int id) // this should be used for none active trinagles
     m_ID = id;
     return;
 }
+Vec3D triangle::CalculateNormal(Vec3D Box) {
+    /**
+     * @brief Calculates the normal vector of the triangle, considering periodic boundary conditions.
+     * important note: This function does not change the NormalVector member variable
+     *
+     * This function computes the normal vector of the triangle by taking into account
+     * periodic boundary conditions defined by the dimensions of the given box.
+     *
+     * @param Box Dimensions of the periodic boundary box.
+     * @return The normal vector of the triangle.
+     */
+    // Get vertex positions
+    double x1 = m_V1->GetVXPos();
+    double y1 = m_V1->GetVYPos();
+    double z1 = m_V1->GetVZPos();
+    double x2 = m_V2->GetVXPos();
+    double y2 = m_V2->GetVYPos();
+    double z2 = m_V2->GetVZPos();
+    double x3 = m_V3->GetVXPos();
+    double y3 = m_V3->GetVYPos();
+    double z3 = m_V3->GetVZPos();
+    
+    // Calculate vectors with periodic boundary adjustments
+    double dx1 = adjust_periodic(x2 - x1, Box(0));
+    double dy1 = adjust_periodic(y2 - y1, Box(1));
+    double dz1 = adjust_periodic(z2 - z1, Box(2));
+    double dx2 = adjust_periodic(x3 - x1, Box(0));
+    double dy2 = adjust_periodic(y3 - y1, Box(1));
+    double dz2 = adjust_periodic(z3 - z1, Box(2));
+    
+    Vec3D v1(dx1,dy1,dz1);
+    Vec3D v2(dx2,dy2,dz2);
+    Vec3D normal = v1*v2;
+    normal.normalize();
+    
+    return normal;
 
-
+}
+double triangle::adjust_periodic(double d, double box_dim) {
+    if (fabs(d) > box_dim / 2.0) {
+        if (d < 0) return box_dim + d;
+        else return d - box_dim;
+    }
+    return d;
+}
 

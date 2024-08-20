@@ -28,8 +28,10 @@ public:
     virtual  double CalculateEnergyChange(double delta_area, double delta_curvature) = 0;
     virtual std::string CurrentState() = 0;
     virtual inline std::string GetDerivedDefaultReadName() = 0;
-    inline static std::string GetBaseDefaultReadName() {return "GlobalCurvature";}
-
+    inline static std::string GetBaseDefaultReadName() {return "GlobalCurvatureCoupling";}
+    inline static std::string GetErrorMessage(std::string s) {
+        return "---> error: unknown global curvature coupling type -- \n";
+    }
 protected:
     VAHGlobalMeshProperties *m_pVAH;
     double &m_TotalArea;
@@ -45,6 +47,7 @@ public:
     NoGlobalCurvature(VAHGlobalMeshProperties *VHA) : AbstractGlobalCurvature(VHA) {}
     ~NoGlobalCurvature(){ }
     inline std::string GetDerivedDefaultReadName()  {return "No";}
+    inline static std::string GetDefaultReadName() {return "No";}
     void Initialize(State *pstate){return;}
     void UpdateEnergyChange(double delta_area, double delta_curvature){return;}
     double CalculateEnergyChange(double delta_area, double delta_curvature){return 0;}

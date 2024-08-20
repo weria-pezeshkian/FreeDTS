@@ -34,15 +34,29 @@ public:
     inline double GetTotalArea() const { return m_TotalArea; }
     inline double GetTotalMeanCurvature() const { return m_TotalCurvature; }
     inline bool GetCalculateVAH() const { return m_CalculatedGlobalVariable; }
+    inline bool VolumeIsActive() const { return m_VolumeIsActive; }
+    inline bool AreaIsActive() const { return m_AreaIsActive; }
+    inline bool GlobalCurvatureIsActive() const { return m_GlobalCurvatureIsActive; }
 
     // Public methods for calculating contributions to global variables
     void CalculateAVertexRingContributionToGlobalVariables(vertex* p_vertex, double& vol, double& area, double& curvature);
     void CalculateALinkTrianglesContributionToGlobalVariables(links* p_link, double& vol, double& area, double& curvature);
     void CalculateBoxRescalingContributionToGlobalVariables(double lx, double ly, double lz, double& vol, double& area, double& curvature);
+    void CalculateGlobalVariables(double& vol, double& area, double& curvature);
+
     void Initialize(State* pState);
 
-    // Method to update the calculation status of global variables
-    void UpdateCalculatedGlobalVariable() {
+    // to be find out that this fuction is running or not
+    void MakeVolumeActive() {
+        m_VolumeIsActive = true;
+        m_CalculatedGlobalVariable = true;
+    }
+    void MakeAreaActive() {
+        m_AreaIsActive = true;
+        m_CalculatedGlobalVariable = true;
+    }
+    void MakeGlobalCurvatureActive() {
+        m_GlobalCurvatureIsActive = true;
         m_CalculatedGlobalVariable = true;
     }
 
@@ -55,6 +69,10 @@ private:
     double m_TotalArea;
     double m_TotalCurvature; // Delta A = h * m_TotalCurvature = h * Sum [2H_v * A_v]
     bool m_CalculatedGlobalVariable;
+    bool m_VolumeIsActive;
+    bool m_AreaIsActive;
+    bool m_GlobalCurvatureIsActive;
+
     State* m_pState; // Pointer to the state object
 };
 

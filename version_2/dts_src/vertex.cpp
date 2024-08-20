@@ -261,6 +261,16 @@ void vertex::ConstantMesh_Copy(){
  
     return;
 }
+void vertex::EnergyCopy(){
+    
+    m_OldEnergy = m_Energy;
+    
+    return;
+}
+void vertex::ReverseEnergyCopy(){
+    m_Energy = m_OldEnergy ;
+    return;
+}
 void vertex::ReverseConstantMesh_Copy(){
     
     m_pVoxel = m_OldpVoxel ;

@@ -91,23 +91,24 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
         m_pState->GetInclusionPoseUpdate()->EvolveOneStep(step);
         //--- run vector fields
         m_pState->GetVectorFieldsRotationUpdate()->EvolveOneStep(step);
+
 //----> Run the supplementary integrators
        //--- update the box side
          m_pState->GetDynamicBox()->ChangeBoxSize(step); // we may need the final step as well to check if the update of move size should be done
         //--- update edge of mesh open edge
          m_pState->GetOpenEdgeEvolution()->Move(step);
+        //--- update the mesh topology
+        m_pState->GetDynamicTopology()->MCMove(step);
         //---- convert inclusions
         m_pState->GetInclusionConversion()->Exchange(step);
     
-        if(!CheckMesh(step)){
-            std::cout<<"---> error, the mesh does not meet the requirment for MC sim \n";
-        }
 
-        //--- update the mesh topology
-        //m_pState->GetDynamicTopology()->MCMove();
 //----> print info about the simulation, e.g., rate,
    // time_t currentTime;
    // time(&currentTime);
+    if(!CheckMesh(step)){
+        std::cout<<"---> error, the mesh does not meet the requirment for MC sim \n";
+    }
     if (step%100 == 0) {
         PrintRate(step, true, true);
     }
@@ -126,6 +127,26 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
     if(fabs(energy_leak) > 0.0001){
         
         std::cout<<"---> possible source of code error: energy leak... "<<energy_leak<<" with real energy of "<<Final_energy<<"  and stored energy of "<<m_pState->GetEnergyCalculator()->GetEnergy()<<"\n";
+    }
+    // check for volume
+    double vol = 0;
+    double g_c = 0;
+    double t_a = 0;
+    m_pState->GetVAHGlobalMeshProperties()->CalculateGlobalVariables(vol,t_a,g_c);
+    vol -= m_pState->GetVAHGlobalMeshProperties()->GetTotalVolume();
+    g_c -= m_pState->GetVAHGlobalMeshProperties()->GetTotalMeanCurvature();
+    t_a -= m_pState->GetVAHGlobalMeshProperties()->GetTotalArea();
+
+    if(fabs(vol) > 0.0001){
+        std::cout<<fabs(vol)<<" volume leak\n";
+    }
+    if(fabs(g_c) > 0.0001)
+    {
+        std::cout<<fabs(g_c)<<" global curvature leak\n";
+    }
+    if(fabs(t_a) > 0.0001)
+    {
+        std::cout<<fabs(t_a)<<" total area leak\n";
     }
         
     return true;

@@ -471,3 +471,28 @@ bool MESH::UpdateGroupFromIndexFile(std::string &filename){
     indexfile.close();
     return true;
 }
+double MESH::SquareDistanceBetweenTwoVertices(vertex *p_v1, vertex* p_v2, Vec3D Box){
+        
+    double dx = p_v1->GetVXPos() - p_v2->GetVXPos();
+    double dy = p_v1->GetVYPos() - p_v2->GetVYPos();
+    double dz = p_v1->GetVZPos() - p_v2->GetVZPos();
+
+    double boxHalfX = Box(0) / 2.0;
+    double boxHalfY = Box(1) / 2.0;
+    double boxHalfZ = Box(2) / 2.0;
+
+    // Adjust coordinates if outside the periodic boundary
+    if (fabs(dx) > boxHalfX) {
+        dx = (dx < 0) ? Box(0) + dx : dx - Box(0);
+    }
+    if (fabs(dy) > boxHalfY) {
+        dy = (dy < 0) ? Box(1) + dy : dy - Box(1);
+    }
+    if (fabs(dz) > boxHalfZ) {
+        dz = (dz < 0) ? Box(2) + dz : dz - Box(2);
+    }
+
+    // Compute and return squared distance
+    return dx * dx + dy * dy + dz * dz;
+    
+}

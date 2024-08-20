@@ -54,6 +54,10 @@ public:
             m_MeshCrossedPBC = newValue;
         return;
     }
+    
+// some helpful static functions
+    static double SquareDistanceBetweenTwoVertices(vertex *p_v1, vertex* p_v2, Vec3D Box);
+
 
 
 public:

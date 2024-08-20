@@ -44,8 +44,8 @@ public:
     ~NoTotalAreaCoupling(){
         
     }
-    inline std::string GetDerivedDefaultReadName()  {return "NoCoupling";}
-    inline std::string GetDefaultReadName()  {return "NoCoupling";}
+    inline std::string GetDerivedDefaultReadName()  {return "No";}
+    inline std::string GetDefaultReadName()  {return "No";}
     std::string CurrentState(){
         
         std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();

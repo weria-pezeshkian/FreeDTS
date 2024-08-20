@@ -73,6 +73,9 @@ public:
     void ConstantMesh_Copy();
     void ReverseConstantMesh_Copy();
     
+    void EnergyCopy();
+    void ReverseEnergyCopy();
+    
   // A set of functions to update vertex variables
   void UpdateVXPos(double x);    // a function for update the x position of a vertex
   void ScalePos(double lx, double ly, double lz);    // a function for update the x position of a vertex

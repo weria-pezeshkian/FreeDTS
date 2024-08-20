@@ -20,7 +20,7 @@ details of these coupling mechanisms.
 class AbstractVolumeCoupling  {
 public:
     // Constructor that initializes the base class with global mesh properties
-    AbstractVolumeCoupling(VAHGlobalMeshProperties *pVHA) : m_pVAH(pVHA), m_TotalVolume(pVHA->m_TotalVolume), m_TotalArea(pVHA->m_TotalArea),  m_CalculatedGlobalVariable(pVHA->m_CalculatedGlobalVariable) {
+    AbstractVolumeCoupling(VAHGlobalMeshProperties *pVHA) : m_pVAH(pVHA), m_TotalVolume(pVHA->m_TotalVolume), m_TotalArea(pVHA->m_TotalArea) {
     }
 
     // Virtual destructor to ensure proper cleanup of derived class objects
@@ -61,7 +61,6 @@ protected:
     
     double &m_TotalVolume;
     double &m_TotalArea;
-    bool &m_CalculatedGlobalVariable;
 };
 
 // Class representing no volume coupling, used as a default or placeholder

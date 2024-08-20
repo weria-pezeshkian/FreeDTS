@@ -11,6 +11,7 @@ VolumeCouplingSecondOrder::VolumeCouplingSecondOrder(VAHGlobalMeshProperties *VH
     m_DeltaP = DeltaP;  // Set the pressure difference
     double pi = acos(-1);  // Calculate Pi
     m_6SQPI = 1.0 / (6.0 * sqrt(pi));  // Calculate 1 / (6 * sqrt(Pi))
+        
 }
 
 VolumeCouplingSecondOrder::~VolumeCouplingSecondOrder() {
@@ -18,11 +19,10 @@ VolumeCouplingSecondOrder::~VolumeCouplingSecondOrder() {
 }
 // Initialize the volume and total area
 void VolumeCouplingSecondOrder::Initialize(State* pstate){
-    
+
     m_pState = pstate;
     m_TotalVolume = 0;
     m_TotalArea = 0;
-    m_CalculatedGlobalVariable = true;
     std::vector<triangle *> all_tri = m_pState->GetMesh()->GetActiveT();
     for (std::vector<triangle *>::iterator it = all_tri.begin() ; it != all_tri.end(); ++it) {
         m_TotalVolume += m_pVAH->CalculateSingleTriangleVolume(*it);

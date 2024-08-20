@@ -35,7 +35,8 @@ public:
     // Update functions
     void UpdateRepresentation(bool); // For visualization output
     void UpdateNormal_Area(Vec3D *Box); // May be sent to other classes
-    void UpdateNormal_Area(Vec3D& norm, double& area); // Update normal and area
+    Vec3D CalculateNormal(Vec3D Box); // important note: This function does not change the NormalVector member variable
+    void UpdateNormal_Area(Vec3D& norm, double& area); // sets normal and area
     void UpdateVertex(vertex *v1, vertex *v2, vertex *v3); // Update vertices
     void UpdateVolume(double vol);
     void UpdateID(int id); // Should not be used for active triangles
@@ -65,6 +66,9 @@ private:
     Vec3D m_oldAreaVector;
     double m_oldArea;
     double m_oldVolume;
+    
+private:
+    double adjust_periodic(double d, double box_dim);
 };
 
 #endif

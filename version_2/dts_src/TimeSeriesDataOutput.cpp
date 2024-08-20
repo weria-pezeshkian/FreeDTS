@@ -54,9 +54,13 @@ and false if the periodic condition is not met or if there is an error writing t
         m_TimeSeriesFile<<(*(m_pState->GetMesh()->GetBox()))(1)<<"  ";
         m_TimeSeriesFile<<(*(m_pState->GetMesh()->GetBox()))(2)<<"  ";
     }
-    if (m_pState->GetVAHGlobalMeshProperties()->GetCalculateVAH()) {
+    if (m_pState->GetVAHGlobalMeshProperties()->VolumeIsActive()) {
         m_TimeSeriesFile << m_pState->GetVAHGlobalMeshProperties()->GetTotalVolume()<<"  ";
+    }
+    if (m_pState->GetVAHGlobalMeshProperties()->AreaIsActive()) {
         m_TimeSeriesFile << m_pState->GetVAHGlobalMeshProperties()->GetTotalArea()<<"  ";
+    }
+    if (m_pState->GetVAHGlobalMeshProperties()->GlobalCurvatureIsActive()) {
         m_TimeSeriesFile << m_pState->GetVAHGlobalMeshProperties()->GetTotalMeanCurvature() <<"  ";
     }
     if (m_pState->GetApplyConstraintBetweenGroups()->GetDerivedDefaultReadName() != "No") {
@@ -64,6 +68,9 @@ and false if the periodic condition is not met or if there is an error writing t
     }
     if (m_pState->GetOpenEdgeEvolution()->GetDerivedDefaultReadName() != "No") {
         m_TimeSeriesFile <<m_pState->GetOpenEdgeEvolution()->GetEdgeSize() <<" ";
+    }
+    if (m_pState->GetDynamicTopology()->GetDerivedDefaultReadName() != "No") {
+        m_TimeSeriesFile <<m_pState->GetDynamicTopology()->GetSurfaceGenus()<<"  ";
     }
     m_TimeSeriesFile<<std::endl;
     
@@ -102,8 +109,16 @@ bool TimeSeriesDataOutput::OpenFile(bool clearfile) {
         if (m_pState->GetDynamicBox()->GetDerivedDefaultReadName() != NoBoxChange::GetDefaultReadName()) {
             m_TimeSeriesFile << " Lx  Ly  Lz ";
         }
-        if (m_pState->GetVAHGlobalMeshProperties()->GetCalculateVAH()) {
-            m_TimeSeriesFile << " Volume  Area  TotalCurvature ";
+        if (m_pState->GetVAHGlobalMeshProperties()->VolumeIsActive()) {
+            m_TimeSeriesFile << " Volume  ";
+
+        }
+        if (m_pState->GetVAHGlobalMeshProperties()->AreaIsActive()) {
+            m_TimeSeriesFile << " Area ";
+
+        }
+        if (m_pState->GetVAHGlobalMeshProperties()->GlobalCurvatureIsActive()) {
+            m_TimeSeriesFile << " Global_Curvature ";
 
         }
         if (m_pState->GetApplyConstraintBetweenGroups()->GetDerivedDefaultReadName() != "No") {
@@ -112,6 +127,10 @@ bool TimeSeriesDataOutput::OpenFile(bool clearfile) {
         if (m_pState->GetOpenEdgeEvolution()->GetDerivedDefaultReadName() != "No") {
             m_TimeSeriesFile << " edge_size ";
         }
+        if (m_pState->GetDynamicTopology()->GetDerivedDefaultReadName() != "No") {
+            m_TimeSeriesFile << " surface_genus ";
+        }
+
         m_TimeSeriesFile << std::endl;
     }
 
