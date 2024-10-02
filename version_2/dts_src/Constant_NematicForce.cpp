@@ -11,7 +11,7 @@ Constant_NematicForce::~Constant_NematicForce() {
 }
 double Constant_NematicForce::Energy_of_Force(vertex *pv, Vec3D dx) {
     
-    if(!pv->VertexOwnInclusion() ||  m_F0 != 0 )
+    if(!pv->VertexOwnInclusion() ||  m_F0 == 0 )
         return 0;
     
     double En = 0;
