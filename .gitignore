@@ -1,0 +1,4 @@
+*.o
+version_*/DTS
+version_*/CNV
+version_*/GEN
