@@ -50,9 +50,6 @@ double CouplingTotalAreaToHarmonicPotential::GetCouplingEnergy(){
     
     return E;
 }
-void CouplingTotalAreaToHarmonicPotential::UpdateTotalArea(double oldarea,  double newarea) {
-    m_TotalArea += newarea-oldarea;
-}
 double CouplingTotalAreaToHarmonicPotential::CalculateAreaOfAVertexRing(vertex *p_vertex) {
     double A=0.0;
     

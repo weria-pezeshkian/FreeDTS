@@ -10,6 +10,9 @@ Description:
     #include <omp.h>
 #endif
 
+#ifdef MPI_DETECTED
+    #include <mpi.h> 
+#endif
 #include <vector>
 #include <string>
 #include "SimDef.h"
@@ -49,14 +52,14 @@ Job::Job(const std::vector<std::string> &argument) {
     ParallelReplicaData    PRD = T_state.GetParallelReplicaData();
     
 //---> here is one openmp is on but still want to perform one single simulation
-    if (!PRD.State) {
+    if (!(PRD.State)) {
         T_state.Initialize();
         T_state.GetSimulation()->do_Simulation();
     }
 else { // run parallel tempering simulations
     AbstractParallelReplicaRun *pParallelReplicaRun;
         
-    if (!PRD.Type == ParallelTempering::GetDefaultReadName()){
+    if (!(PRD.Type == ParallelTempering::GetDefaultReadName())){
             
         pParallelReplicaRun = new ParallelTempering(argument);
         if(pParallelReplicaRun->Initialize(PRD)){
@@ -69,6 +72,7 @@ else { // run parallel tempering simulations
     else{
         std::cout<<"---> error: unknow type for "<<AbstractParallelReplicaRun::GetBaseDefaultReadName()<<"\n";
         exit(0);
+    }
     }
 #endif
 

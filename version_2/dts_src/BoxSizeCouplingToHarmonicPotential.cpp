@@ -1,7 +1,7 @@
 
 
 #include <stdio.h>
-#include "PositionRescaleFrameTensionCoupling.h"
+#include "BoxSizeCouplingToHarmonicPotential.h"
 #include "Nfunction.h"
 #include "vertex.h"
 #include "State.h"
@@ -18,7 +18,7 @@ This class changes the box in x and y direction to minimize the energy. It is ca
 The way it works is based on the changing the box in x and y direction by a small size of dr by calling "ChangeBoxSize" function.
 =================================================================================================================
 */
-PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(int period, double sigma, std::string direction, State *pState)  :
+BoxSizeCouplingToHarmonicPotential::BoxSizeCouplingToHarmonicPotential(int period, double k, double a0, std::string direction, State *pState)  :
         m_pState(pState),
         m_pActiveV(pState->GetMesh()->GetActiveV()),
         m_pActiveT(pState->GetMesh()->GetActiveT()),
@@ -29,23 +29,27 @@ PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(int per
         m_MinLength2(pState->GetSimulation()->GetMinL2()),
         m_MaxLength2(pState->GetSimulation()->GetMaxL2()),
         m_MinAngle(pState->GetSimulation()->GetMinAngle()),
-        m_Type (direction){
+        m_Type (direction),
+        m_K(k),
+        m_A0(a0),
+        m_Period(period){
             
-            m_SigmaP = sigma;
-            m_Period = period;
+            
+            m_K = m_K/2;
+            
             //-- convert the type string into the direction vector
             SetDirection(m_Type);
 
 }
-PositionRescaleFrameTensionCoupling::~PositionRescaleFrameTensionCoupling() {
+BoxSizeCouplingToHarmonicPotential::~BoxSizeCouplingToHarmonicPotential() {
     
 }
-void PositionRescaleFrameTensionCoupling::Initialize() {
+void BoxSizeCouplingToHarmonicPotential::Initialize() {
     
     std::cout<<"---> the algorithm for box change involves applying: "<< GetDefaultReadName()<<" \n";
     m_pBox = (m_pState->GetMesh())->GetBox();
 }
-bool PositionRescaleFrameTensionCoupling::ChangeBoxSize(int step){
+bool BoxSizeCouplingToHarmonicPotential::ChangeBoxSize(int step){
     /**
      * @brief a call function to change the simulation box size at a given step.
      *
@@ -94,7 +98,7 @@ bool PositionRescaleFrameTensionCoupling::ChangeBoxSize(int step){
     
     return true;
 }
-bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double ly, double lz, double temp){
+bool BoxSizeCouplingToHarmonicPotential::AnAtemptToChangeBox(double lx,double ly, double lz, double temp){
 
 //---> check if we do the move, the distance will be normal
     if(!VertexMoveIsFine(lx, ly, lz)){
@@ -237,7 +241,16 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
         }
     }
     
-    tot_diff_energy -= m_SigmaP * (new_systemsize - old_systemsize);
+    double newDV = (new_systemsize-m_A0);
+    newDV *=newDV;
+    
+    double oldDV = (old_systemsize-m_A0);
+    oldDV *=oldDV;
+
+    double boxDE =  newDV - oldDV;
+       boxDE = m_K*boxDE;
+    
+    tot_diff_energy += boxDE;
     
 
 
@@ -285,7 +298,7 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
 
     return true;
 }
-bool PositionRescaleFrameTensionCoupling::VertexMoveIsFine(double lx,double ly, double lz){
+bool BoxSizeCouplingToHarmonicPotential::VertexMoveIsFine(double lx,double ly, double lz){
     /**
      * @brief Checks if distances are valid given the new box dimensions.
      *
@@ -349,7 +362,7 @@ bool PositionRescaleFrameTensionCoupling::VertexMoveIsFine(double lx,double ly, 
     
     return true;
 }
-bool PositionRescaleFrameTensionCoupling::CheckLinkLength(double lx,double ly, double lz){
+bool BoxSizeCouplingToHarmonicPotential::CheckLinkLength(double lx,double ly, double lz){
     /**
      * Checks if the length of links in the mesh is within acceptable bounds after rescaling.
      *
@@ -379,7 +392,7 @@ bool PositionRescaleFrameTensionCoupling::CheckLinkLength(double lx,double ly, d
 
     return true;
 }
-double PositionRescaleFrameTensionCoupling::StretchedDistanceSquardBetweenTwoVertices(vertex * v1,vertex * v2, double lx, double ly, double lz){
+double BoxSizeCouplingToHarmonicPotential::StretchedDistanceSquardBetweenTwoVertices(vertex * v1,vertex * v2, double lx, double ly, double lz){
     /**
      * Calculates the squared stretched distance between two vertices.
      *
@@ -437,7 +450,7 @@ double PositionRescaleFrameTensionCoupling::StretchedDistanceSquardBetweenTwoVer
     // Return the squared distance after scaling and applying periodic boundary conditions
     return dx * dx + dy * dy + dz * dz;
 }
-bool PositionRescaleFrameTensionCoupling::CheckFaceAngleOfOneLink(links* p_edge) {
+bool BoxSizeCouplingToHarmonicPotential::CheckFaceAngleOfOneLink(links* p_edge) {
     
     // Function to check if the angle between the normal vectors of the faces sharing the given edge
     // is above a minimum threshold defined by m_MinAngle.
@@ -462,7 +475,7 @@ bool PositionRescaleFrameTensionCoupling::CheckFaceAngleOfOneLink(links* p_edge)
     return true;
 }
 
-bool PositionRescaleFrameTensionCoupling::CheckFaces() {
+bool BoxSizeCouplingToHarmonicPotential::CheckFaces() {
     // Function to check if the angle between the faces of all links in the m_pRightL list
     // satisfies the minimum angle condition.
     
@@ -478,7 +491,7 @@ bool PositionRescaleFrameTensionCoupling::CheckFaces() {
     // If all links satisfy the face angle condition, return true.
     return true;
 }
-void PositionRescaleFrameTensionCoupling::SetDirection(std::string direction){
+void BoxSizeCouplingToHarmonicPotential::SetDirection(std::string direction){
     /**
      * @brief Sets the direction for box size rescaling.
      *
@@ -528,16 +541,14 @@ void PositionRescaleFrameTensionCoupling::SetDirection(std::string direction){
     }
     else{
         // Print an error message if the direction is unknown
-        std::cout << "---> Error: direction of the box change is unknown\n";
-        exit(0);
-    }
+        std::cout << "---> Error: direction of the box change is unknown\n";    }
     
     return;
 }
-std::string PositionRescaleFrameTensionCoupling::CurrentState(){
+std::string BoxSizeCouplingToHarmonicPotential::CurrentState(){
     
     std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();
-    state = state +" "+ Nfunction::D2S(m_Period)+" "+Nfunction::D2S(m_SigmaP)+" "+  m_Type;
+    state = state +" "+ Nfunction::D2S(m_Period)+" "+Nfunction::D2S(2*m_K)+" "+Nfunction::D2S(m_A0)+" "+  m_Type;
     return state;
 }
 

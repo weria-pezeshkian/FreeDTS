@@ -1,9 +1,14 @@
 
 
 #include <stdio.h>
-#include "AlexanderMoveByMetropolisAlgorithm.h"
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+#include <thread>   // For std::this_thread::sleep_for
+#include <chrono>   // For std::chrono::milliseconds
+#include "AlexanderMoveByMetropolisAlgorithmWithOpenMP.h"
 #include "State.h"
-AlexanderMoveByMetropolisAlgorithm::AlexanderMoveByMetropolisAlgorithm(State* pState) :
+AlexanderMoveByMetropolisAlgorithmWithOpenMP::AlexanderMoveByMetropolisAlgorithmWithOpenMP(State* pState) :
             m_pState(pState),
             m_pSurfL(pState->GetMesh()->GetRightL()),
             m_Beta(pState->GetSimulation()->GetBeta()),
@@ -14,7 +19,7 @@ AlexanderMoveByMetropolisAlgorithm::AlexanderMoveByMetropolisAlgorithm(State* pS
                 
                 m_NumberOfMovePerStep = 1;
 }
-AlexanderMoveByMetropolisAlgorithm::AlexanderMoveByMetropolisAlgorithm(State* pState, double rate) :
+AlexanderMoveByMetropolisAlgorithmWithOpenMP::AlexanderMoveByMetropolisAlgorithmWithOpenMP(State* pState, double rate) :
             m_pState(pState),
             m_pSurfL(pState->GetMesh()->GetRightL()),
             m_Beta(pState->GetSimulation()->GetBeta()),
@@ -26,36 +31,90 @@ AlexanderMoveByMetropolisAlgorithm::AlexanderMoveByMetropolisAlgorithm(State* pS
                 m_NumberOfMovePerStep = rate;
 
 }
-AlexanderMoveByMetropolisAlgorithm::~AlexanderMoveByMetropolisAlgorithm(){
+AlexanderMoveByMetropolisAlgorithmWithOpenMP::~AlexanderMoveByMetropolisAlgorithmWithOpenMP(){
     
 }
-bool AlexanderMoveByMetropolisAlgorithm::Initialize() {
+bool AlexanderMoveByMetropolisAlgorithmWithOpenMP::Initialize() {
     
     m_pBox = m_pState->GetMesh()->GetBox();
     m_NumberOfAttemptedMoves = 0;
     m_AcceptedMoves = 0;
+    m_Total_ThreadsNo = m_pState->GetThreads_Number();
     return true;
 }
-bool AlexanderMoveByMetropolisAlgorithm::EvolveOneStep(int step){
- 
+bool AlexanderMoveByMetropolisAlgorithmWithOpenMP::EvolveOneStep(int step) {
+#ifdef _OPENMP
     int no_edges = m_pSurfL.size();
-    int no_steps = no_edges*m_NumberOfMovePerStep;
-    
-  for (int i = 0; i< no_steps;i++) {
-    
-      int r_lid = m_pState->GetRandomNumberGenerator()->IntRNG(no_edges);
-      links *p_link = m_pSurfL[r_lid];
+    int no_steps = no_edges * m_NumberOfMovePerStep;
 
-      double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
-      if(FlipOneEdge(step, p_link,thermal)){
-          m_AcceptedMoves++;
-      }
-      m_NumberOfAttemptedMoves++;
+ //   omp_set_num_threads(m_Total_ThreadsNo); // Set the number of threads
+    double diff_energy = 0.0;
+
+    // Use OpenMP parallel with reduction to accumulate values without atomics
+    #pragma omp parallel reduction(+:m_AcceptedMoves, diff_energy) num_threads(m_Total_ThreadsNo)
+    {
+        // Each thread has its own local counters
+        int local_AcceptedMoves = 0;
+        double local_diff_energy = 0.0;
+
+        // Parallel loop over steps with dynamic scheduling
+        #pragma omp for schedule(dynamic)
+        for (int i = 0; i < no_steps; i++) {
+            double tem_en = 0.0;
+
+            // Generate a random edge
+            std::vector <vertex *> l4vertices;
+            links* p_edge;
+            int r_lid = m_pState->GetRandomNumberGenerator()->IntRNG(no_edges);
+            p_edge = m_pSurfL[r_lid];
+            while (true) {
+                l4vertices.clear();
+            /// open mp
+                l4vertices.push_back(p_edge->GetV1());
+                l4vertices.push_back(p_edge->GetV2());
+                l4vertices.push_back(p_edge->GetV3());
+                l4vertices.push_back(p_edge->GetMirrorLink()->GetV3());
+
+                    if (vertex::CheckLockVectorVertex(l4vertices)) {
+                        break;
+                    }
+                std::this_thread::sleep_for(std::chrono::nanoseconds(Backoff_Factor));
+                }
+            
+
+            // Generate a random thermal value
+            double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+
+            // Perform the flip operation and accumulate local counters if successful
+            if (FlipOneEdge(step, p_edge, thermal, tem_en)) {
+                local_AcceptedMoves++;
+                local_diff_energy += tem_en;
+            }
+            vertex::UnockVectorVertex(l4vertices);
+        }
+
+        // Thread-local results are automatically reduced to global values
+        m_AcceptedMoves += local_AcceptedMoves;
+        diff_energy += local_diff_energy;
     }
-    
+
+    // Update total number of attempted moves
+    m_NumberOfAttemptedMoves += no_steps;
+
+    // Assuming diff_energy is used elsewhere in the code
+    // or needs to be applied globally
+    m_pState->GetEnergyCalculator()->AddToTotalEnergy(diff_energy);
+
     return true;
+
+#else
+    std::cerr << "---> Error: OpenMP is not available, but the program requires it. Please recompile with OpenMP support.\n";
+    exit(EXIT_FAILURE); // Exit with a non-zero value to indicate failure
+    
+    return false;
+#endif
 }
-bool AlexanderMoveByMetropolisAlgorithm::FlipOneEdge(int step, links *p_edge, double temp){
+bool AlexanderMoveByMetropolisAlgorithmWithOpenMP::FlipOneEdge(int step, links *p_edge, double temp, double &changed_en){
     /**
      * @brief Attempts to flip the specified edge and evaluates the energy change.
      *
@@ -93,7 +152,9 @@ bool AlexanderMoveByMetropolisAlgorithm::FlipOneEdge(int step, links *p_edge, do
     old_energy += v3->GetBindingEnergy();
     old_energy += v4->GetBindingEnergy();
 
-
+    
+ 
+    
 //-- get the energy for interaction
     std::vector<links*> Affected_links = GetEdgesWithInteractionChange(p_edge);
     
@@ -210,8 +271,7 @@ bool AlexanderMoveByMetropolisAlgorithm::FlipOneEdge(int step, links *p_edge, do
     //---> accept or reject the move
     if(U <= 0 || exp(-U) > temp ) {
         // move is accepted
-        (m_pState->GetEnergyCalculator())->AddToTotalEnergy(diff_energy);
-        
+        changed_en = diff_energy;
         //---> global variables
         if(m_pState->GetVAHGlobalMeshProperties()->GetCalculateVAH()){
            
@@ -224,6 +284,7 @@ bool AlexanderMoveByMetropolisAlgorithm::FlipOneEdge(int step, links *p_edge, do
     else {
 //---> reverse the changes that has been made to the system
         p_edge->Reverse_Flip(p_edge);
+        changed_en = 0;
 
         //---> reverse the triangles
         t1->ReverseConstantMesh_Copy();
@@ -257,7 +318,7 @@ bool AlexanderMoveByMetropolisAlgorithm::FlipOneEdge(int step, links *p_edge, do
     return true;
 }
 // this function can be deleted any time; it is for test cases only
-double  AlexanderMoveByMetropolisAlgorithm::SystemEnergy()
+double  AlexanderMoveByMetropolisAlgorithmWithOpenMP::SystemEnergy()
 {
     /*
     MESH* m_pMESH = m_pState->m_pMesh;
@@ -301,7 +362,7 @@ double  AlexanderMoveByMetropolisAlgorithm::SystemEnergy()
 
 
 // finding the distance of the current vertex from the pv2; also considering the pbc conditions
-bool AlexanderMoveByMetropolisAlgorithm::CheckFacesAfterFlip(links* p_links) {
+bool AlexanderMoveByMetropolisAlgorithmWithOpenMP::CheckFacesAfterFlip(links* p_links) {
     // Checks the validity of faces after an edge flip operation
     // Parameters:
     //   p_links: Pointer to the edge to be checked
@@ -343,7 +404,7 @@ bool AlexanderMoveByMetropolisAlgorithm::CheckFacesAfterFlip(links* p_links) {
     
     return true;
 }
-bool AlexanderMoveByMetropolisAlgorithm::EdgeCanBeFliped(links *p_edge) {
+bool AlexanderMoveByMetropolisAlgorithmWithOpenMP::EdgeCanBeFliped(links *p_edge) {
     /**
      * @brief Checks if an edge can be flipped.
      *
@@ -426,7 +487,7 @@ bool AlexanderMoveByMetropolisAlgorithm::EdgeCanBeFliped(links *p_edge) {
 
     return true;
 }
-std::vector<links*> AlexanderMoveByMetropolisAlgorithm::GetEdgesWithInteractionChange(links *p_edge){
+std::vector<links*> AlexanderMoveByMetropolisAlgorithmWithOpenMP::GetEdgesWithInteractionChange(links *p_edge){
     /**
      * @brief Retrieves a list of edges whose interactions may change due to the flipping of a given edge.
      *
@@ -510,7 +571,7 @@ std::vector<links*> AlexanderMoveByMetropolisAlgorithm::GetEdgesWithInteractionC
     
     return edge_with_interaction_change;
 }
-std::string AlexanderMoveByMetropolisAlgorithm::CurrentState(){
+std::string AlexanderMoveByMetropolisAlgorithmWithOpenMP::CurrentState(){
     
     std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();
     state = state + " "+ Nfunction::D2S(m_NumberOfMovePerStep);

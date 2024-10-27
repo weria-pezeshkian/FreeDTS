@@ -8,7 +8,9 @@
  * This class is created in version 1.2 to centralize global variables like volume, area, and total curvature.
  * It provides methods to calculate and retrieve these global properties of a mesh.
  */
-
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 #include "SimDef.h"
 
 class vertex;
@@ -63,6 +65,12 @@ public:
     // Method to calculate the volume of a single triangle
     double CalculateSingleTriangleVolume(triangle* pTriangle);
 
+    
+    //===
+    void Add2Volume(double vol);
+    void Add2TotalArea(double area);
+    void Add2GlobalCurvature(double CG);
+
 private:
     // Private member variables to store global properties
     double m_TotalVolume;
@@ -74,6 +82,12 @@ private:
     bool m_GlobalCurvatureIsActive;
 
     State* m_pState; // Pointer to the state object
+    
+#ifdef _OPENMP
+    omp_lock_t m_VLock;  // OpenMP lock for thread-safe updates
+    omp_lock_t m_ALock;  // OpenMP lock for thread-safe updates
+    omp_lock_t m_CGLock;  // OpenMP lock for thread-safe updates
+#endif
 };
 
 #endif // AFX_VAHGLOBALMESHPROPERTIES_H_224B21B8_C13C_2248_BF23_124095086233__INCLUDED_

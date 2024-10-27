@@ -22,7 +22,8 @@ double Energy::SingleVertexEnergy(vertex *p_vertex) {
     double Energy=0.0;
 //---> note, if the vertex has no inclusion, this will return zero by default
     Energy += m_pState->GetExternalFieldOnInclusions()->GetCouplingEnergy(p_vertex);
-    
+    Energy += m_pState->GetVertexAdhesionToSubstrate()->GetCouplingEnergy(p_vertex);
+
     if(p_vertex->m_VertexType == 0) {
     
         Energy += SurfVertexBendingAndStretchingEnergy(p_vertex);
@@ -47,7 +48,7 @@ double Energy::SurfVertexBendingAndStretchingEnergy(vertex * p_vertex){
     double c2 = p_vertex->GetP2Curvature();
 
     double mean_times2 = c1 + c2;
-    double gussian = c1 * c1;
+    double gussian = c1 * c2;
     double area = p_vertex->GetArea();
     
     // energy for area coupling K*(area-a0)^2
@@ -81,7 +82,7 @@ double Energy::SurfVertexBendingAndStretchingEnergy(vertex * p_vertex){
             double Cos = local_direction(0);
             double Sin = local_direction(1);
             double Cp = c1 * Cos * Cos + c2 * Sin * Sin;
-            double Cn = c1 * Cos * Cos + c2 * Sin * Sin;
+            double Cn = c2 * Cos * Cos + c1 * Sin * Sin;
             double Delta_Cp = Cp - cp10;
             double Delta_Cn = Cn - cn20;
             en += (k1 * Delta_Cp * Delta_Cp + k2 * Delta_Cn * Delta_Cn) * area;
@@ -574,7 +575,7 @@ if(p_vertex->GetVertexType() == 0) {
     double c2 = p_vertex->GetP2Curvature();
 
     double mean_times2 = c1 + c2;
-    double gussian = c1 * c1;
+    double gussian = c1 * c2;
     double area = p_vertex->GetArea();
     
     double k0 = inc_type->ITk;
@@ -594,7 +595,7 @@ if(p_vertex->GetVertexType() == 0) {
         double Cos = l_direction(0);
         double Sin = l_direction(1);
         double Cp = c1 * Cos * Cos + c2 * Sin * Sin;
-        double Cn = c1 * Cos * Cos + c2 * Sin * Sin;
+        double Cn = c2 * Cos * Cos + c1 * Sin * Sin;
         double Delta_Cp = Cp - cp10;
         double Delta_Cn = Cn - cn20;
         en += (k1 * Delta_Cp * Delta_Cp + k2 * Delta_Cn * Delta_Cn) * area;

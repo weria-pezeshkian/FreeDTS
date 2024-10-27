@@ -2,6 +2,7 @@
 #define AFX_RNG_H_9G4B21B8_C13Q_5648_BF23_124095086234_INCLUDED_
 
 #include <random>
+#include <ctime>
 #include "SimDef.h"
 /*
     RNG.h
@@ -34,25 +35,29 @@
     bool binaryValue = rng.BinRNG();
 */
 class RNG {
-    
 public:
-    RNG(int seed);
-    ~RNG(){
-        
-    }
-    void Initialize();
+    // Constructor: Initialize RNG with a seed
+    explicit RNG(int seed);
 
+    // Generates a uniform random number in the range [0, A)
     double UniformRNG(double A);
-    bool BinRNG();
+	inline int GetSeed()        {return m_seed;}
+    // Generates a random integer in the range [0, a)
     int IntRNG(int a);
 
-private:
-    double m_Seed;
+    // Generates a binary random outcome (true/false)
+    bool BinRNG();
 
-#if RNGTYPE == UNIFROMTYPE1
-    std::default_random_engine m_generator;
-    std::uniform_real_distribution<double> m_Rdistribution;
+private:
+    int m_seed;  // Seed for the random number generator
+
+    // C++11 random number generator and distribution (used if RNGTYPE == UNIFORMTYPE1)
+#if RNGTYPE == UNIFORMTYPE1
+    std::default_random_engine m_generator;  // Random number generator (C++11)
+    std::uniform_real_distribution<double> m_uniform_dist;  // Uniform real distribution [0, 1]
 #endif
+
+    // Note: No additional member variables are required for RNGTYPE == UNIFORMTYPE0 since it uses rand()/srand().
 };
 
 #endif

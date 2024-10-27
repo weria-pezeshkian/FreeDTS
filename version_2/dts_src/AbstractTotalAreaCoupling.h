@@ -21,7 +21,6 @@ public:
         
     }
     virtual  void Initialize(State *pstate) = 0;
-    virtual  void UpdateTotalArea(double oldarea, double newarea) = 0;
     virtual  double CalculateEnergyChange(double oldarea,  double newarea) = 0;
     virtual double GetCouplingEnergy() = 0;
     virtual double CalculateAreaofALinkTriangles(links *p_link) = 0;
@@ -30,6 +29,8 @@ public:
     virtual inline std::string GetDerivedDefaultReadName() = 0;
     
     inline static std::string GetBaseDefaultReadName() {return "TotalAreaCoupling";}
+    
+
 protected:
     VAHGlobalMeshProperties *m_pVAH;
     double &m_TotalArea;
@@ -59,9 +60,6 @@ public:
     }
     double CalculateEnergyChange(double oldarea,  double newarea){
         return 0;
-    }
-    void UpdateTotalArea(double oldarea, double newarea){
-        return;
     }
     double GetCouplingEnergy(){
         return 0;

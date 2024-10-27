@@ -1,5 +1,8 @@
 #if !defined(AFX_vertex_H_9P4B21B8_C13C_5648_BF23_124095086234__INCLUDED_)
 #define AFX_vertex_H_9P4B21B8_C13C_5648_BF23_124095086234__INCLUDED_
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 #include "Voxel.h"
 #include "SimDef.h"
 #include "Vec3D.h"
@@ -193,6 +196,21 @@ private:
     double m_OldPrincipalCurvature_2;
     double m_OldMeanCurvature;
     double m_OldGaussianCurvature;
+    
+// OpenMP methods Oct 2024    
+#ifdef _OPENMP
+public:
+bool CheckLockVertex();
+void LockVertex();
+bool UnlockVertex();
+void LockNeighbourVertex();
+void UnlockNeighbourVertex();
+bool CheckLockNeighbourVertex();
+    static bool CheckLockVectorVertex(const std::vector<vertex*>&);
+    static void UnockVectorVertex(std::vector <vertex *>);
+private:
+omp_lock_t m_Lock;
+#endif
 };
 
 

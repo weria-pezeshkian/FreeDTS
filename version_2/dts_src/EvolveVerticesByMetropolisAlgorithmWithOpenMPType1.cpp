@@ -1,10 +1,15 @@
 
 
 #include <stdio.h>
-#include "EvolveVerticesByMetropolisAlgorithm.h"
+#include <thread>   // For std::this_thread::sleep_for
+#include <chrono>   // For std::chrono::milliseconds
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+#include "EvolveVerticesByMetropolisAlgorithmWithOpenMPType1.h"
 #include "State.h"
 
-EvolveVerticesByMetropolisAlgorithm::EvolveVerticesByMetropolisAlgorithm(State *pState)
+EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(State *pState)
     : m_pState(pState),
       m_pSurfV(pState->GetMesh()->GetSurfV()),
       m_pEdgeV(pState->GetMesh()->GetEdgeV()),
@@ -19,7 +24,7 @@ EvolveVerticesByMetropolisAlgorithm::EvolveVerticesByMetropolisAlgorithm(State *
           m_DR = 0.05;
           
       }
-EvolveVerticesByMetropolisAlgorithm::EvolveVerticesByMetropolisAlgorithm(State *pState, double rate_surf, double rate_edge, double dr)
+EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(State *pState, double rate_surf, double rate_edge, double dr)
     : m_pState(pState),
       m_pSurfV(pState->GetMesh()->GetSurfV()),
       m_pEdgeV(pState->GetMesh()->GetEdgeV()),
@@ -33,68 +38,212 @@ EvolveVerticesByMetropolisAlgorithm::EvolveVerticesByMetropolisAlgorithm(State *
           m_NumberOfMovePerStep_Edge = rate_edge;
           m_DR = dr;
       }
-EvolveVerticesByMetropolisAlgorithm::~EvolveVerticesByMetropolisAlgorithm(){
+EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::~EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(){
 
 }
-void EvolveVerticesByMetropolisAlgorithm::Initialize(){
+void EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::Initialize(){
     m_pBox = m_pState->GetMesh()->GetBox();
+    m_Total_ThreadsNo = m_pState->GetThreads_Number();
     m_NumberOfAttemptedMoves = 0;
     m_AcceptedMoves = 0;
 
     return;
 }
-bool EvolveVerticesByMetropolisAlgorithm::EvolveOneStep(int step){
+bool EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::EvolveOneStep(int step){
  
+#ifdef _OPENMP
+    // OpenMP is available, continue with the program
+    
     int no_surf_v = m_pSurfV.size();
     int no_edge_v = m_pEdgeV.size();
     int no_steps_edge = no_edge_v*m_NumberOfMovePerStep_Edge;
     int no_steps_surf = no_surf_v*m_NumberOfMovePerStep_Surf;
 
-  for (int i = 0; i< no_steps_surf;i++) {
-      int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_surf_v);
-      vertex *pvertex = m_pSurfV[r_vid];
-      
-      if( m_FreezGroupName == pvertex->GetGroupName()){
-          continue;
-      }
-      double dx=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-      double dy=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-      double dz=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-      
-      if(!m_pState->GetBoundary()->MoveHappensWithinTheBoundary(dx,dy,dz, pvertex)){
-          continue;
-      }
-      double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
-      if(EvolveOneVertex(step, pvertex, m_DR*dx, m_DR*dy, m_DR*dz,thermal)){
-          m_AcceptedMoves++;
-      }
-      m_NumberOfAttemptedMoves++;
-    }
-    for (int i = 0; i< no_steps_edge;i++) {
-      
-        int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_edge_v);
-        vertex *pvertex = m_pEdgeV[r_vid];
-        if( m_FreezGroupName == pvertex->GetGroupName()){
-            continue;
-        }
-        double dx=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-        double dy=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-        double dz=1-2*(m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
-        if(!m_pState->GetBoundary()->MoveHappensWithinTheBoundary(dx,dy,dz, pvertex)){
-            continue;
-        }
-        
-        double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
 
-        if(EvolveOneVertex(step, pvertex, m_DR*dx, m_DR*dy, m_DR*dz,thermal)){
-            m_AcceptedMoves++;
+
+
+    //omp_set_num_threads(m_Total_ThreadsNo);  // Set the number of threads
+    double diff_energy = 0.0;
+    int total_AcceptedMoves = 0;
+
+    // Use OpenMP to parallelize the outer loop with dynamic scheduling and reduction
+    #pragma omp parallel reduction(+:total_AcceptedMoves, diff_energy)
+    {
+        int local_AcceptedMoves = 0;  // Thread-local counters
+        double local_diff_energy = 0.0;
+        vertex* pvertex;
+
+        // Parallel for with dynamic scheduling
+        #pragma omp for schedule(dynamic)
+        for (int i = 0; i < no_steps_surf; i++) {
+
+            // Implement a lock with backoff to avoid busy-waiting
+            while (true) {
+                int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_surf_v);  // Thread-local RNG
+                pvertex = m_pSurfV[r_vid];
+
+                // Try to lock the vertex and its neighbors
+                if (pvertex->CheckLockVertex()) {
+                    if (!pvertex->CheckLockNeighbourVertex()) {
+                        pvertex->UnlockVertex();  // Unlock if neighbors can't be locked
+                    } else {
+                        break;  // Successfully locked vertex and neighbors, break the loop
+                    }
+                }
+            }
+            /*int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_surf_v); // Thread-local RNG
+            pvertex = m_pSurfV[r_vid];
+        while (true) {
+            if (pvertex->CheckLockVertex()) {
+                if (!pvertex->CheckLockNeighbourVertex()) {
+                    pvertex->UnlockVertex();  // Unlock the vertex if neighbors can't be locked
+                } else {
+                    break;  // Successfully locked vertex and neighbors, break the loop
+                }
+            }
+        std::this_thread::sleep_for(std::chrono::nanoseconds(Backoff_Factor));
+        }*/
+
+            // Skip if the vertex is in the frozen group
+            if (m_FreezGroupName == pvertex->GetGroupName()) {
+                pvertex->UnlockVertex();
+                pvertex->UnlockNeighbourVertex();
+                continue;
+            }
+
+            // Generate random move vectors
+            double dx = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+            double dy = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+            double dz = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+
+            // Check if the move is within the boundary
+            if (!m_pState->GetBoundary()->MoveHappensWithinTheBoundary(dx, dy, dz, pvertex)) {
+                pvertex->UnlockVertex();
+                pvertex->UnlockNeighbourVertex();
+                continue;
+            }
+
+            // Generate random thermal value
+            double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+            double tem_en = 0.0;
+
+            // Evolve the vertex and update local counters if successful
+            if (EvolveOneVertex(step, pvertex, m_DR * dx, m_DR * dy, m_DR * dz, thermal, tem_en)) {
+                local_AcceptedMoves++;  // Increment local accepted moves
+                local_diff_energy += tem_en;  // Accumulate local energy change
+            }
+
+            // Unlock the vertex and its neighbors
+            pvertex->UnlockVertex();
+            pvertex->UnlockNeighbourVertex();
         }
-        m_NumberOfAttemptedMoves++;
+
+        // Update the shared variables after the loop
+        total_AcceptedMoves += local_AcceptedMoves;  // Reduction for accepted moves
+        diff_energy += local_diff_energy;  // Reduction for energy difference
     }
-        
-    return true;
+
+    // Update the global variables once, after the parallel section
+    m_AcceptedMoves += total_AcceptedMoves;  // Safely update accepted moves
+    m_pState->GetEnergyCalculator()->AddToTotalEnergy(diff_energy);  // Add energy
+    m_NumberOfAttemptedMoves += no_steps_surf;  // Update the number of attempted moves
+
+omp_set_num_threads(m_Total_ThreadsNo); // Set the number of threads
+ diff_energy = 0.0;
+
+// Use OpenMP to parallelize the outer loop with dynamic scheduling
+#pragma omp parallel for schedule(dynamic) num_threads(m_Total_ThreadsNo)
+for (int i = 0; i < no_steps_edge; i++) {
+    // Each thread has its own local counters
+    int local_AcceptedMoves = 0;
+    double local_diff_energy = 0.0;
+
+    vertex *pvertex;
+
+    // Try to lock a random vertex and its neighbors
+    /*int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_edge_v); // Thread-local RNG
+    	pvertex = m_pEdgeV[r_vid];
+    while (true) {
+        if (pvertex->CheckLockVertex()) {
+            if (!pvertex->CheckLockNeighbourVertex()) {
+                pvertex->UnlockVertex();  // Unlock the vertex if neighbors can't be locked
+            } else {
+                break;  // Successfully locked vertex and neighbors, break the loop
+            }
+        }
+    std::this_thread::sleep_for(std::chrono::nanoseconds(Backoff_Factor));
+    }*/
+    
+    
+    while (true) {
+        int r_vid = m_pState->GetRandomNumberGenerator()->IntRNG(no_edge_v);
+        pvertex = m_pEdgeV[r_vid];
+
+        if (pvertex->CheckLockVertex()) {
+            if (!pvertex->CheckLockNeighbourVertex()) {
+                pvertex->UnlockVertex();  // Unlock the vertex if neighbors can't be locked
+            } else {
+                break;  // Successfully locked vertex and neighbors, break the loop
+            }
+        }
+    }
+
+    // Skip if vertex is in the frozen group
+    if (m_FreezGroupName == pvertex->GetGroupName()) {
+        pvertex->UnlockVertex();
+        pvertex->UnlockNeighbourVertex();
+        continue;
+    }
+
+    // Generate random move vectors
+    double dx = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+    double dy = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+    double dz = 1 - 2 * m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+
+    // Check if the move is within the boundary
+    if (!m_pState->GetBoundary()->MoveHappensWithinTheBoundary(dx, dy, dz, pvertex)) {
+        pvertex->UnlockVertex();
+        pvertex->UnlockNeighbourVertex();
+        continue;
+    }
+
+    double thermal = m_pState->GetRandomNumberGenerator()->UniformRNG(1.0);
+    double tem_en = 0.0;
+
+    // Evolve the vertex and update local counters if successful
+    if (EvolveOneVertex(step, pvertex, m_DR * dx, m_DR * dy, m_DR * dz, thermal, tem_en)) {
+        local_AcceptedMoves++;
+        local_diff_energy += tem_en;
+    }
+
+    // Unlock the vertex and its neighbors
+    pvertex->UnlockVertex();
+    pvertex->UnlockNeighbourVertex();
+
+    // Combine local results into shared variables
+    #pragma omp atomic
+    m_AcceptedMoves += local_AcceptedMoves;
+
+    // Atomic update to shared diff_energy variable
+    #pragma omp atomic
+    diff_energy += local_diff_energy;
 }
-bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp){
+
+// Add total energy from the local diff_energy calculated by each thread
+m_pState->GetEnergyCalculator()->AddToTotalEnergy(diff_energy);
+m_NumberOfAttemptedMoves += no_steps_surf;
+
+
+
+    return true;
+#else
+    std::cerr << "---> Error: OpenMP is not available, but the program requires it. Please recompile with OpenMP support.\n";
+    exit(EXIT_FAILURE); // Exit with a non-zero value to indicate failure
+    
+    return false;
+#endif
+}
+bool EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::EvolveOneVertex(int step, vertex *pvertex, double dx, double dy, double dz,double temp, double &changed_en){
     
     double old_energy = 0;
     double new_energy = 0;
@@ -223,6 +372,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     
     //--> only elatsic energy
     double diff_energy = new_energy - old_energy;
+            changed_en = diff_energy;
     //std::cout<<diff_energy<<" dif en \n";
     //--> sum of all the energies
     double tot_diff_energy = diff_energy + dE_Cgroup + dE_force_from_inc + dE_force_from_vector_fields + dE_volume + dE_t_area + dE_g_curv ;
@@ -230,7 +380,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     //---> accept or reject the move
     if(U <= 0 || exp(-U) > temp ) {
         // move is accepted
-        (m_pState->GetEnergyCalculator())->AddToTotalEnergy(diff_energy);
+     // (m_pState->GetEnergyCalculator())->AddToTotalEnergy(diff_energy);        
         //---> if vertex is out of the voxel, update its voxel
         if(!pvertex->CheckVoxel()){
             pvertex->UpdateVoxelAfterAVertexMove();
@@ -250,6 +400,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     else {
 //---> reverse the changes that has been made to the system
         //---> reverse the triangles
+        changed_en = 0;
         for (std::vector<triangle *>::iterator it = N_triangles.begin() ; it != N_triangles.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
         }
@@ -284,7 +435,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
 }
 //---> this does not check the angle of the faces. Because this should be done after the move:
 //waste of calculation if we do ith before the move. Unless, we store the values. That also not good because move could get rejected.
-bool EvolveVerticesByMetropolisAlgorithm::VertexMoveIsFine(vertex* pvertex, double dx,double dy, double dz,  double mindist2, double maxdist2){
+bool EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::VertexMoveIsFine(vertex* pvertex, double dx,double dy, double dz,  double mindist2, double maxdist2){
 //--->  vertex new position if get accepted
     
         double new_x = pvertex->GetXPos() + dx;
@@ -363,7 +514,7 @@ std::cout << pvertex->GetVoxel()->GetXIndex()<<" "<<pvertex->GetVoxel()->GetYInd
     return true;
 }
 // finding the distance of the current vertex from the pv2; also considering the pbc conditions
-bool EvolveVerticesByMetropolisAlgorithm::CheckFacesAfterAVertexMove(vertex* p_vertex) {
+bool EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::CheckFacesAfterAVertexMove(vertex* p_vertex) {
     std::vector<links*> linkList = p_vertex->GetVLinkList();
     for (std::vector<links*>::iterator it = linkList.begin(); it != linkList.end(); ++it) {
         links* link = *it;
@@ -376,7 +527,7 @@ bool EvolveVerticesByMetropolisAlgorithm::CheckFacesAfterAVertexMove(vertex* p_v
 
 //========
 // this function can be deleted any time; it is for test cases only
-double  EvolveVerticesByMetropolisAlgorithm::SystemEnergy()
+double  EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::SystemEnergy()
 {
     /*
     MESH* m_pMESH = m_pState->m_pMesh;
@@ -417,14 +568,14 @@ double  EvolveVerticesByMetropolisAlgorithm::SystemEnergy()
      */
     return 0;
 }
-std::string EvolveVerticesByMetropolisAlgorithm::CurrentState(){
+std::string EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::CurrentState(){
     
     std::string state = AbstractVertexPositionIntegrator::GetBaseDefaultReadName() +" = "+ GetDerivedDefaultReadName();
     state = state +" "+ Nfunction::D2S(m_NumberOfMovePerStep_Surf) +" "+Nfunction::D2S(m_NumberOfMovePerStep_Edge);
     state = state +" "+ Nfunction::D2S(m_DR);
     return state;
 }
-std::vector<links*> EvolveVerticesByMetropolisAlgorithm::GetEdgesWithInteractionChange(vertex* p_vertex){
+std::vector<links*> EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::GetEdgesWithInteractionChange(vertex* p_vertex){
 #if DEVELOPMENT_MODE == Enabled
     std::cout<<" DEVELOPMENT_MODE ID 665656: This function should be made much better\n ";
     // for example, precheck to select only links that both has includioon ...

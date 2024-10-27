@@ -21,7 +21,6 @@ public:
 
     void Initialize(State *pstate);   ///
     double CalculateEnergyChange(double oldarea,  double newarea);
-    void UpdateTotalArea(double oldarea, double newarea);
     double GetCouplingEnergy();
     double CalculateAreaofALinkTriangles(links *p_link);
     double CalculateAreaOfAVertexRing(vertex * pVeretx);   ///

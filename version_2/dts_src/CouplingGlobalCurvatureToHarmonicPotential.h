@@ -26,6 +26,7 @@
  *
  * This class inherits from AbstractGlobalCurvature.
  */
+
 #include "SimDef.h"
 #include "vertex.h"
 #include "triangle.h"
@@ -39,14 +40,12 @@ public:
     CouplingGlobalCurvatureToHarmonicPotential(VAHGlobalMeshProperties *VHA,  double Gkappa, double GlobalC0);
     ~CouplingGlobalCurvatureToHarmonicPotential();
 
-       inline double GetEnergy()                        {return m_Energy;} // Only part of energy asscoiated with this class
     
 public:
     void Initialize(State* pState);
     double GetCouplingEnergy();
 
     
-    void UpdateEnergyChange(double delta_area, double delta_curvature);
     double CalculateEnergyChange(double delta_area, double delta_curvature);
     std::string CurrentState();
     inline  std::string GetDerivedDefaultReadName()  {return "HarmonicPotential";}
@@ -56,6 +55,7 @@ private:
     double m_K;        // energy coupling constant (in the constructor it will be devided by 2)
     double m_gC0;    // Global curvature
     State *m_pState;
+
 };
 
 

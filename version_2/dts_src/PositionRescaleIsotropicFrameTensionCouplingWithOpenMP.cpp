@@ -1,7 +1,12 @@
 
 
 #include <stdio.h>
-#include "PositionRescaleFrameTensionCoupling.h"
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+#include <thread>   // For std::this_thread::sleep_for
+#include <chrono>   // For std::chrono::milliseconds
+#include "PositionRescaleIsotropicFrameTensionCouplingWithOpenMP.h"
 #include "Nfunction.h"
 #include "vertex.h"
 #include "State.h"
@@ -10,7 +15,7 @@
 
 /*
 ===============================================================================================================
- Last update Aug 2023 by Weria
+ Last update Oct 2024 by Weria
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
 This class changes the box in x and y direction to minimize the energy. It is called in input file by Frame_Tension  = on 0 2, where the first flag should be on to start this command and the second argument is frame tension and the third argument is the priodic of the operating.
@@ -18,7 +23,7 @@ This class changes the box in x and y direction to minimize the energy. It is ca
 The way it works is based on the changing the box in x and y direction by a small size of dr by calling "ChangeBoxSize" function.
 =================================================================================================================
 */
-PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(int period, double sigma, std::string direction, State *pState)  :
+PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::PositionRescaleIsotropicFrameTensionCouplingWithOpenMP(int period, double sigma, std::string direction, State *pState)  :
         m_pState(pState),
         m_pActiveV(pState->GetMesh()->GetActiveV()),
         m_pActiveT(pState->GetMesh()->GetActiveT()),
@@ -37,15 +42,15 @@ PositionRescaleFrameTensionCoupling::PositionRescaleFrameTensionCoupling(int per
             SetDirection(m_Type);
 
 }
-PositionRescaleFrameTensionCoupling::~PositionRescaleFrameTensionCoupling() {
+PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::~PositionRescaleIsotropicFrameTensionCouplingWithOpenMP() {
     
 }
-void PositionRescaleFrameTensionCoupling::Initialize() {
+void PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::Initialize() {
     
     std::cout<<"---> the algorithm for box change involves applying: "<< GetDefaultReadName()<<" \n";
     m_pBox = (m_pState->GetMesh())->GetBox();
 }
-bool PositionRescaleFrameTensionCoupling::ChangeBoxSize(int step){
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::ChangeBoxSize(int step){
     /**
      * @brief a call function to change the simulation box size at a given step.
      *
@@ -67,9 +72,8 @@ bool PositionRescaleFrameTensionCoupling::ChangeBoxSize(int step){
     double voxel_lz = m_pState->GetVoxelization()->GetZSideVoxel();
     if(voxel_lx < 1.05 || voxel_ly < 1.05 || voxel_lz < 1.05) {
         m_pState->GetVoxelization()->UpdateVoxelSize(1.2, 1.2, 1.2);
-        m_pState->GetVoxelization()->Voxelize(m_pActiveV);
+        m_pState->GetVoxelization()->VoxelizeOpenMP(m_pActiveV);
     }
-    
 //---> find the size of box change; isotropic method (here all the other methods can be performed)
     double dx = 1 - 2 * (m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));
     dx *= m_DR;
@@ -94,7 +98,7 @@ bool PositionRescaleFrameTensionCoupling::ChangeBoxSize(int step){
     
     return true;
 }
-bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double ly, double lz, double temp){
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::AnAtemptToChangeBox(double lx,double ly, double lz, double temp){
 
 //---> check if we do the move, the distance will be normal
     if(!VertexMoveIsFine(lx, ly, lz)){
@@ -123,17 +127,21 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
         old_Tarea =  m_pState->GetVAHGlobalMeshProperties()->GetTotalArea();
         old_Tcurvature =  m_pState->GetVAHGlobalMeshProperties()->GetTotalMeanCurvature();
     }
+#pragma omp parallel for
     for (std::vector<triangle *>::iterator it = m_pActiveT.begin() ; it != m_pActiveT.end(); ++it){
         (*it)->ConstantMesh_Copy();
     }
+#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pRightL.begin() ; it != m_pRightL.end(); ++it){
         (*it)->ConstantMesh_Copy();
         (*it)->Copy_VFInteractionEnergy();
     }
+#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pEdgeL.begin() ; it != m_pEdgeL.end(); ++it){
         (*it)->ConstantMesh_Copy();
         (*it)->Copy_VFInteractionEnergy();
     }
+#pragma omp parallel for
     for (std::vector<vertex *>::iterator it = m_pActiveV.begin() ; it != m_pActiveV.end(); ++it){
         (*it)->ConstantMesh_Copy();
         (*it)->Copy_VFsBindingEnergy();
@@ -143,7 +151,7 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
     // while if we do it after the move, it will be from final configurations
     double dE_force_from_inc = 0;
     double dE_force_from_vectorfields = 0;
-
+#pragma omp parallel for
     for (std::vector<vertex *>::iterator it = m_pActiveV.begin() ; it != m_pActiveV.end(); ++it){
         double x = (*it)->GetVXPos();
         double y = (*it)->GetVYPos();
@@ -160,18 +168,22 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
     (*m_pBox)(0) *= lx;
     (*m_pBox)(1) *= ly;
     (*m_pBox)(2) *= lz;
+#pragma omp parallel for
     for (std::vector<vertex*>::iterator it =  m_pActiveV.begin(); it != m_pActiveV.end(); ++it) {
         (*it)->ScalePos(lx,ly,lz);
     }
     //-- Update geometry
+#pragma omp parallel for
     for (std::vector<triangle *>::iterator it = m_pActiveT.begin() ; it != m_pActiveT.end(); ++it){
         (*it)->UpdateNormal_Area(m_pBox);
     }
 
     if(!CheckFaces()){
+#pragma omp parallel for
         for (std::vector<vertex*>::iterator it =  m_pActiveV.begin(); it != m_pActiveV.end(); ++it) {
             (*it)->ScalePos(1.0/lx,1.0/ly,1.0/lz);
         }
+#pragma omp parallel for
         for (std::vector<triangle *>::iterator it = m_pActiveT.begin() ; it != m_pActiveT.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
         }
@@ -179,12 +191,15 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
     }
     //--- lets now do the move
   //  m_pState->GetCurvatureCalculator()->Initialize();
+#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pRightL.begin() ; it != m_pRightL.end(); ++it){
         (*it)->UpdateShapeOperator(m_pBox);
     }
+#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pEdgeL.begin() ; it != m_pEdgeL.end(); ++it){
         (*it)->UpdateEdgeVector(m_pBox);  //
     }
+#pragma omp parallel for
     for (std::vector<vertex *>::iterator it = m_pActiveV.begin() ; it != m_pActiveV.end(); ++it){
         (m_pState->GetCurvatureCalculator())->UpdateVertexCurvature(*it);
     }
@@ -193,16 +208,19 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
 
 //--- calculate new energies
     int number_of_vectorfields = m_pState->GetMesh()->GetNoVFPerVertex();
+//#pragma omp parallel for
     for (std::vector<vertex *>::iterator it = m_pActiveV.begin() ; it != m_pActiveV.end(); ++it) {
         new_energy += (m_pState->GetEnergyCalculator())->SingleVertexEnergy(*it);
         new_energy += (m_pState->GetEnergyCalculator())->CalculateVectorFieldMembraneBindingEnergy(*it);
     }
+//#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pRightL.begin() ; it != m_pRightL.end(); ++it) {
         new_energy += (m_pState->GetEnergyCalculator())->TwoInclusionsInteractionEnergy(*it);
         for (int i = 0; i<number_of_vectorfields; i++){
             new_energy += (m_pState->GetEnergyCalculator())->TwoVectorFieldInteractionEnergy(i, *it);
         }
     }
+//#pragma omp parallel for
     for (std::vector<links *>::iterator it = m_pEdgeL.begin() ; it != m_pEdgeL.end(); ++it) {
         new_energy += (m_pState->GetEnergyCalculator())->TwoInclusionsInteractionEnergy(*it);
         for (int i = 0; i<number_of_vectorfields; i++){
@@ -265,17 +283,21 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
         (*m_pBox)(0) *= 1/lx;
         (*m_pBox)(1) *= 1/ly;
         (*m_pBox)(2) *= 1/lz;
+//#pragma omp parallel for
         for (std::vector<triangle *>::iterator it = m_pActiveT.begin() ; it != m_pActiveT.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
         }
+//#pragma omp parallel for
         for (std::vector<links *>::iterator it = m_pRightL.begin() ; it != m_pRightL.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
             (*it)->Reverse_VFInteractionEnergy();
         }
+//#pragma omp parallel for
         for (std::vector<links *>::iterator it = m_pEdgeL.begin() ; it != m_pEdgeL.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
             (*it)->Reverse_VFInteractionEnergy();
         }
+//#pragma omp parallel for
         for (std::vector<vertex *>::iterator it = m_pActiveV.begin() ; it != m_pActiveV.end(); ++it){
             (*it)->ReverseConstantMesh_Copy();
             (*it)->Reverse_VFsBindingEnergy();
@@ -285,7 +307,7 @@ bool PositionRescaleFrameTensionCoupling::AnAtemptToChangeBox(double lx,double l
 
     return true;
 }
-bool PositionRescaleFrameTensionCoupling::VertexMoveIsFine(double lx,double ly, double lz){
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::VertexMoveIsFine(double lx,double ly, double lz){
     /**
      * @brief Checks if distances are valid given the new box dimensions.
      *
@@ -300,56 +322,81 @@ bool PositionRescaleFrameTensionCoupling::VertexMoveIsFine(double lx,double ly, 
         return false;
     }
     
-    //--- if the Stretching is positive, so the distances should be fine
-    if(lx>=1 && ly>=1 && lz>=1)
+    // If the stretching is positive, distances should be fine
+    if (lx >= 1 && ly >= 1 && lz >= 1) {
         return true;
-    
-    //--- checking the distance between each pair
-    Voxel<vertex>  ****voxels = m_pState->GetVoxelization()->GetAllVoxel();
+    }
+
+    // Get voxel data
+    Voxel<vertex> ****voxels = m_pState->GetVoxelization()->GetAllVoxel();
     int Nx = m_pState->GetVoxelization()->GetXVoxelNumber();
     int Ny = m_pState->GetVoxelization()->GetYVoxelNumber();
     int Nz = m_pState->GetVoxelization()->GetZVoxelNumber();
 
-    for (int i = 0; i < Nx; ++i) {
-    for (int j = 0; j < Ny; ++j) {
-    for (int k = 0; k < Nz; ++k) {
-        
-        std::vector<vertex*> voxel_ver = (voxels[i][j][k])->GetContentObjects();
-            
-        //--- check distances within the same voxel
-        for (std::vector<vertex*>::iterator it1 = voxel_ver.begin(); it1 != voxel_ver.end(); ++it1) {
-            for (std::vector<vertex*>::iterator it2 = it1 + 1; it2 != voxel_ver.end(); ++it2) {
-                    double l2 = StretchedDistanceSquardBetweenTwoVertices(*it1, *it2, lx, ly, lz);
-                    if (l2 < m_MinLength2) {
-                        return false;
-                    }
-                }
-        }
-        // check distances of vertex from neighbouring voxels
-            for (int n = 0; n < 2; ++n)
-            for (int m = 0; m < 2; ++m)
-            for (int s = 0; s < 2; ++s)
-              if(n != 0 || m != 0 || s!=0) {
-                    std::vector<vertex*> voxel_ver2 = (voxels[i][j][k])->GetANeighbourCell(n,m,s)->GetContentObjects();
+    // Shared flag to track if an invalid move is found
+    bool valid = true;
 
-                    for (std::vector<vertex *>::iterator it1 = voxel_ver.begin() ; it1 != voxel_ver.end(); ++it1) {
-                        for (std::vector<vertex *>::iterator it2 = voxel_ver2.begin() ; it2 != voxel_ver2.end(); ++it2) {
-                            if(it1 != it2){
-                                double l2 = StretchedDistanceSquardBetweenTwoVertices(*it1, *it2, lx, ly, lz);
-                                if (l2 < m_MinLength2) {
-                                    return false;
+    // Parallelize the voxel processing loops using OpenMP
+    #pragma omp parallel for collapse(3) shared(valid)
+    for (int i = 0; i < Nx; ++i) {
+        for (int j = 0; j < Ny; ++j) {
+            for (int k = 0; k < Nz; ++k) {
+                // Skip checking if an invalid move has already been found
+                if (!valid) continue;
+
+                std::vector<vertex*> voxel_ver = (voxels[i][j][k])->GetContentObjects();
+
+                // Check distances within the same voxel
+                for (std::vector<vertex*>::iterator it1 = voxel_ver.begin(); it1 != voxel_ver.end(); ++it1) {
+                    for (std::vector<vertex*>::iterator it2 = it1 + 1; it2 != voxel_ver.end(); ++it2) {
+                        double l2 = StretchedDistanceSquardBetweenTwoVertices(*it1, *it2, lx, ly, lz);
+                        if (l2 < m_MinLength2) {
+                            #pragma omp critical
+                            {
+                                valid = false;
+                            }
+                            break;
+                        }
+                    }
+                    if (!valid) break; // Exit inner loop if invalid move is found
+                }
+                if (!valid) continue; // Skip further checks if invalid move is found
+
+                // Check distances from neighboring voxels
+                for (int n = 0; n < 2; ++n) {
+                    for (int m = 0; m < 2; ++m) {
+                        for (int s = 0; s < 2; ++s) {
+                            if (n != 0 || m != 0 || s != 0) {
+                                std::vector<vertex*> voxel_ver2 = (voxels[i][j][k])->GetANeighbourCell(n, m, s)->GetContentObjects();
+
+                                for (std::vector<vertex*>::iterator it1 = voxel_ver.begin(); it1 != voxel_ver.end(); ++it1) {
+                                    for (std::vector<vertex*>::iterator it2 = voxel_ver2.begin(); it2 != voxel_ver2.end(); ++it2) {
+                                        if (it1 != it2) {
+                                            double l2 = StretchedDistanceSquardBetweenTwoVertices(*it1, *it2, lx, ly, lz);
+                                            if (l2 < m_MinLength2) {
+                                                #pragma omp critical
+                                                {
+                                                    valid = false;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!valid) break; // Exit inner loop if invalid move is found
                                 }
-                        }//  if(it1 != it2){
+                                if (!valid) break; // Exit middle loop if invalid move is found
+                            }
+                        }
+                        if (!valid) break; // Exit outer loop if invalid move is found
                     }
                 }
-            }// for (int s = 0; s < 2; ++s) {
+            }
+        }
     }
-    }
-    }
-    
-    return true;
+
+    return valid;  // Return true if no invalid distances were found, false otherwise
 }
-bool PositionRescaleFrameTensionCoupling::CheckLinkLength(double lx,double ly, double lz){
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::CheckLinkLength(double lx,double ly, double lz){
     /**
      * Checks if the length of links in the mesh is within acceptable bounds after rescaling.
      *
@@ -363,23 +410,45 @@ bool PositionRescaleFrameTensionCoupling::CheckLinkLength(double lx,double ly, d
      * @return True if all links are within the acceptable length range, false otherwise.
      */
     
+    // A shared flag to indicate if we find an invalid link length
+    bool valid = true;
+
+    // Parallelize the first loop over m_pEdgeL
+    #pragma omp parallel for shared(valid)
     for (std::vector<links *>::iterator it = m_pEdgeL.begin(); it != m_pEdgeL.end(); ++it) {
+        if (!valid) continue;  // Early exit if a failure has already been detected
+
         double l2 = StretchedDistanceSquardBetweenTwoVertices((*it)->GetV1(), (*it)->GetV2(), lx, ly, lz);
+        
+        // Check if the link length is outside acceptable bounds
         if (l2 < m_MinLength2 || l2 > m_MaxLength2) {
-            return false;
+            #pragma omp critical  // Ensure only one thread sets the flag at a time
+            {
+                valid = false;
+            }
         }
     }
 
+    // Parallelize the second loop over m_pRightL
+    #pragma omp parallel for shared(valid)
     for (std::vector<links *>::iterator it = m_pRightL.begin(); it != m_pRightL.end(); ++it) {
+        if (!valid) continue;  // Early exit if a failure has already been detected
+
         double l2 = StretchedDistanceSquardBetweenTwoVertices((*it)->GetV1(), (*it)->GetV2(), lx, ly, lz);
+
+        // Check if the link length is outside acceptable bounds
         if (l2 < m_MinLength2 || l2 > m_MaxLength2) {
-            return false;
+            #pragma omp critical  // Ensure only one thread sets the flag at a time
+            {
+                valid = false;
+            }
         }
     }
 
-    return true;
+    return valid;
+
 }
-double PositionRescaleFrameTensionCoupling::StretchedDistanceSquardBetweenTwoVertices(vertex * v1,vertex * v2, double lx, double ly, double lz){
+double PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::StretchedDistanceSquardBetweenTwoVertices(vertex * v1,vertex * v2, double lx, double ly, double lz){
     /**
      * Calculates the squared stretched distance between two vertices.
      *
@@ -437,7 +506,7 @@ double PositionRescaleFrameTensionCoupling::StretchedDistanceSquardBetweenTwoVer
     // Return the squared distance after scaling and applying periodic boundary conditions
     return dx * dx + dy * dy + dz * dz;
 }
-bool PositionRescaleFrameTensionCoupling::CheckFaceAngleOfOneLink(links* p_edge) {
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::CheckFaceAngleOfOneLink(links* p_edge) {
     
     // Function to check if the angle between the normal vectors of the faces sharing the given edge
     // is above a minimum threshold defined by m_MinAngle.
@@ -462,23 +531,24 @@ bool PositionRescaleFrameTensionCoupling::CheckFaceAngleOfOneLink(links* p_edge)
     return true;
 }
 
-bool PositionRescaleFrameTensionCoupling::CheckFaces() {
-    // Function to check if the angle between the faces of all links in the m_pRightL list
-    // satisfies the minimum angle condition.
-    
-    // Iterate through all links in the m_pRightL vector.
-    for (std::vector<links*>::iterator it = m_pRightL.begin(); it != m_pRightL.end(); ++it) {
-        // For each link, check if the face angle condition is satisfied using CheckFaceAngleOfOneLink function.
-        // If any link does not satisfy the condition, return false.
-        if (!CheckFaceAngleOfOneLink(*it)) {
-            return false;
+bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::CheckFaces() {
+    bool all_satisfy = true; // This will hold the final result
+
+    // Get the number of links in the m_pRightL vector
+    int numLinks = m_pRightL.size();
+
+    // Parallelize the loop with OpenMP
+    #pragma omp parallel for reduction(&&:all_satisfy)
+    for (int i = 0; i < numLinks; ++i) {
+        // If any link fails the check, set all_satisfy to false
+        if (!CheckFaceAngleOfOneLink(m_pRightL[i])) {
+            all_satisfy = false;
         }
     }
 
-    // If all links satisfy the face angle condition, return true.
-    return true;
+    return all_satisfy; // Return the final result
 }
-void PositionRescaleFrameTensionCoupling::SetDirection(std::string direction){
+void PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::SetDirection(std::string direction){
     /**
      * @brief Sets the direction for box size rescaling.
      *
@@ -534,7 +604,7 @@ void PositionRescaleFrameTensionCoupling::SetDirection(std::string direction){
     
     return;
 }
-std::string PositionRescaleFrameTensionCoupling::CurrentState(){
+std::string PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::CurrentState(){
     
     std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();
     state = state +" "+ Nfunction::D2S(m_Period)+" "+Nfunction::D2S(m_SigmaP)+" "+  m_Type;

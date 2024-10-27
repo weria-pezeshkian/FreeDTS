@@ -1,6 +1,8 @@
 #ifndef VOXELIZATION_H_INCLUDED
 #define VOXELIZATION_H_INCLUDED
-
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 #include "SimDef.h"
 #include "Vec3D.h"
 /*
@@ -183,6 +185,127 @@ bool Voxelize(std::vector<Type *> all_pObjects) {
     std::cout<<" vertices are added to voxels \n";
 #endif
         return true; // Placeholder
+}
+bool VoxelizeOpenMP(std::vector<Type *> all_pObjects) {
+#ifdef _OPENMP
+        #if DEBUG_MODE == Enabled
+        std::cout << " We are in the Voxelize function using openMP\n";
+        #endif
+
+        //---> Make m_AllVoxel empty
+        if (m_AllVoxel != nullptr) {
+            for (int i = 0; i < m_Nx; ++i) {
+                for (int j = 0; j < m_Ny; ++j) {
+                    for (int k = 0; k < m_Nz; ++k) {
+                        delete m_AllVoxel[i][j][k];
+                    }
+                    delete[] m_AllVoxel[i][j];
+                }
+                delete[] m_AllVoxel[i];
+            }
+            delete[] m_AllVoxel;
+            m_AllVoxel = nullptr;
+        }
+        #if DEBUG_MODE == Enabled
+        std::cout << " All voxels have been emptied \n";
+        #endif
+
+        //---> Find the appropriate voxel size and number of voxels
+        m_Nx = int((*m_pBox)(0) / m_Lx);
+        m_Ny = int((*m_pBox)(1) / m_Ly);
+        m_Nz = int((*m_pBox)(2) / m_Lz);
+        double Lx = (*m_pBox)(0) / double(m_Nx);
+        double Ly = (*m_pBox)(1) / double(m_Ny);
+        double Lz = (*m_pBox)(2) / double(m_Nz);
+
+        #if DEBUG_MODE == Enabled
+        std::cout << m_Nx << "  " << m_Ny << "  " << m_Nz << " number of voxels\n";
+        std::cout << Lx << "  " << Ly << "  " << Lz << " size of voxels\n";
+        #endif
+
+        //---> Create voxels
+        int voxel_id = 0;
+        m_AllVoxel = new Voxel<Type>***[m_Nx];
+
+        // Parallelize voxel creation
+    // First allocate memory sequentially to avoid race conditions
+    for (int i = 0; i < m_Nx; ++i) {
+        m_AllVoxel[i] = new Voxel<Type>**[m_Ny];
+        for (int j = 0; j < m_Ny; ++j) {
+            m_AllVoxel[i][j] = new Voxel<Type>*[m_Nz];
+        }
+    }
+    // Now parallelize the voxel creation safely
+    #pragma omp parallel for collapse(3)
+    for (int i = 0; i < m_Nx; ++i) {
+        for (int j = 0; j < m_Ny; ++j) {
+            for (int k = 0; k < m_Nz; ++k) {
+                int voxel_id = i * m_Ny * m_Nz + j * m_Nz + k;
+                m_AllVoxel[i][j][k] = new Voxel<Type>(voxel_id, i, j, k, m_Nx, m_Ny, m_Nz);
+            }
+        }
+    }
+        #if DEBUG_MODE == Enabled
+        std::cout << " We created new voxels \n";
+        #endif
+
+        //---> Update voxel neighbors
+        #pragma omp parallel for collapse(3)
+        for (int i = 0; i < m_Nx; ++i) {
+            for (int j = 0; j < m_Ny; ++j) {
+                for (int k = 0; k < m_Nz; ++k) {
+                    for (int n = -1; n <= 1; ++n) {
+                        for (int m = -1; m <= 1; ++m) {
+                            for (int p = -1; p <= 1; ++p) {
+                                m_AllVoxel[i][j][k]->SetANeighbourCell(
+                                    n, m, p,
+                                    m_AllVoxel[(i + n + m_Nx) % m_Nx]
+                                              [(j + m + m_Ny) % m_Ny]
+                                              [(k + p + m_Nz) % m_Nz]
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #if DEBUG_MODE == Enabled
+        std::cout << " Voxel neighbors have been set \n";
+        #endif
+
+        //---> Allocate objects to the voxels
+        #pragma omp parallel for
+        for (typename std::vector<Type *>::iterator it = all_pObjects.begin(); it != all_pObjects.end(); ++it) {
+            double x = (*it)->GetXPos(); // Retrieve X position of each object
+            double y = (*it)->GetYPos(); // Retrieve Y position
+            double z = (*it)->GetZPos(); // Retrieve Z position
+
+            int nx = x / Lx;
+            int ny = y / Ly;
+            int nz = z / Lz;
+
+            Voxel<Type> *pVoxel = m_AllVoxel[nx][ny][nz];
+
+            // Critical section to avoid race conditions when adding objects to voxel content
+            #pragma omp critical
+            {
+                pVoxel->AddtoContentList(*it);
+                (*it)->UpdateVoxel(pVoxel);
+            }
+        }
+
+        #if DEBUG_MODE == Enabled
+        std::cout << " Objects are added to voxels \n";
+        #endif
+
+        return true; // Placeholder
+#else
+    std::cerr << "---> Error: OpenMP is not available, but the program requires it. Please recompile with OpenMP support.\n";
+    exit(EXIT_FAILURE); // Exit with a non-zero value to indicate failure
+    
+    return false;
+#endif
 }
 //----> Important and detailed function
 bool ReassignMembersToVoxels(std::vector<Type *> all_pObjects) {

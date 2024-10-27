@@ -83,7 +83,8 @@ void TimeSeriesLogInformation::WriteStartingState(){
     m_TimeSeriesFile<<m_pState->GetExternalFieldOnVectorFields()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetExternalFieldOnInclusions()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetInclusionConversion()->CurrentState()<<std::endl;
-    
+    m_TimeSeriesFile<<m_pState->GetVertexAdhesionToSubstrate()->CurrentState()<<std::endl;
+
     
     m_TimeSeriesFile<<m_pState->GetVolumeCoupling()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetGlobalCurvature()->CurrentState()<<std::endl;

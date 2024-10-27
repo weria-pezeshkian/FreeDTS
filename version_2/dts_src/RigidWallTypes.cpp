@@ -87,7 +87,7 @@ EllipsoidalShell::EllipsoidalShell(State* pState, double thickness, double r, do
 
     
     
-    *(m_pState->GetTimeSeriesLog()) << "---> this class is in complete \n";
+    *(m_pState->GetTimeSeriesLog()) << "---> this class is incomplete \n";
     
 }
 EllipsoidalShell::~EllipsoidalShell(){
@@ -96,10 +96,10 @@ EllipsoidalShell::~EllipsoidalShell(){
 void EllipsoidalShell::Initialize() {
 
     double size = m_A * m_A + m_C * m_C + m_B * m_B;
-    
-    m_A = sqrt(3)/size;
-    m_B = sqrt(3)/size;
-    m_C = sqrt(3)/size;
+    size = sqrt(size);
+    m_A = m_A*sqrt(3)/size;
+    m_B = m_B*sqrt(3)/size;
+    m_C = m_C*sqrt(3)/size;
 
     const std::vector<vertex *>& pAllVertices = m_pState->GetMesh()->GetActiveV();
     double V_number = double(pAllVertices.size());
@@ -167,3 +167,81 @@ std::string EllipsoidalShell::CurrentState(){
     state = state +" "+ Nfunction::D2S(2*m_HalfThickness) +" "+ Nfunction::D2S(m_R) +" "+ Nfunction::D2S(m_A) +" "+ Nfunction::D2S(m_B) +" "+ Nfunction::D2S(m_C);
     return state;
 }
+
+//===== EllipsoidalCore implementations
+EllipsoidalCore::EllipsoidalCore(State* pState, double r, double a, double b, double c)  :
+            m_pState(pState),
+            m_R(r),
+            m_A(a),
+            m_B(b),
+            m_C(c)
+{
+
+    
+    
+}
+EllipsoidalCore::~EllipsoidalCore(){
+    
+}
+void EllipsoidalCore::Initialize() {
+
+    double size = m_A * m_A + m_C * m_C + m_B * m_B;
+    size = sqrt(size);
+    m_A = m_A*sqrt(3)/size;
+    m_B = m_B*sqrt(3)/size;
+    m_C = m_C*sqrt(3)/size;
+
+    const std::vector<vertex *>& pAllVertices = m_pState->GetMesh()->GetActiveV();
+    double V_number = double(pAllVertices.size());
+    if(V_number == 0){
+        std::cout<<"--> error: number of vertices is zero, should not happen \n";
+    }
+    V_number = 1.0/V_number;
+     for (std::vector<vertex *>::const_iterator it = pAllVertices.begin(); it != pAllVertices.end(); ++it) {
+         m_COG = m_COG + (*it)->GetPos()*(V_number);
+      }
+    m_A = 1/m_A;    m_B = 1/m_B;    m_C = 1/m_C;
+    double rmin = std::numeric_limits<double>::max();
+    for (std::vector<vertex *>::const_iterator it = pAllVertices.begin(); it != pAllVertices.end(); ++it) {
+        
+        Vec3D P = (*it)->GetPos() - m_COG;
+        P(0) = P(0)*m_A;
+        P(1) = P(1)*m_B;
+        P(2) = P(2)*m_C;
+
+        double r2 = Vec3D::dot(P,P);
+        
+        if( r2 < rmin){
+            rmin = r2;
+        }
+    }
+    rmin = sqrt(rmin);
+    if(m_R > rmin){
+        m_R = rmin - 0.001;
+        *(m_pState->GetTimeSeriesLog()) << " Radius of the boundry core was reduced to "<<m_R<<" so no vertex is within the core \n";
+
+    }
+    m_R = m_R*m_R;
+
+}
+bool EllipsoidalCore::MoveHappensWithinTheBoundary(double dx, double dy, double dz, vertex* p_ver){
+    
+    Vec3D P(dx,dy,dz);
+    P = P + p_ver->GetPos() - m_COG;
+    P(0) = P(0)*m_A;
+    P(1) = P(1)*m_B;
+    P(2) = P(2)*m_C;
+    
+    if(Vec3D::dot(P,P) < m_R ){
+        return false;
+    }
+    
+    return true;
+}
+std::string EllipsoidalCore::CurrentState(){
+    
+    std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();
+    state = state +" "+ Nfunction::D2S(sqrt(m_R)) +" "+ Nfunction::D2S(1/m_A) +" "+ Nfunction::D2S(1/m_B) +" "+ Nfunction::D2S(1/m_C);
+    return state;
+}
+

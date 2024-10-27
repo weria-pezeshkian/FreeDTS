@@ -75,7 +75,6 @@ public:
         m_TotalEnergy += d_en;
         return;
     }
-
     
     void SetSurfRigidity(double kappa, double kappa_g, double c0){
         m_kappa = kappa/2;

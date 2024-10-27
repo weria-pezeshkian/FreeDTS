@@ -61,6 +61,13 @@ bool MC_Simulation::do_Simulation(){
     std::cout<<" We have reached simulation run loop!  \n";
 #endif
     std::clock_t start = std::clock();
+    
+#ifdef _OPENMP
+    double startwall_time = omp_get_wtime();
+#endif
+// Your OpenMP parallel code here
+
+
     std::cout<<"------>   Simulation will be performed from "<<m_Initial_Step<<" to "<<m_Final_Step<<" steps\n";
 for (int step = m_Initial_Step; step <= m_Final_Step; step++){
         
@@ -102,6 +109,8 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
         //---- convert inclusions
         m_pState->GetInclusionConversion()->Exchange(step);
     
+        //---- NonequilibriumCommands
+        m_pState->GetNonequilibriumCommands()->Run(step);
 
 //----> print info about the simulation, e.g., rate,
    // time_t currentTime;
@@ -115,10 +124,17 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
 
 } // for(int step=GetInitialStep(); step<GetFinalStep(); step++)
     std::clock_t end = std::clock();
+    
+
+    
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     std::cout<<"---- Simulation has ended ----\n";
-    std::cout<<" The run took: "<<Nfunction::ConvertSecond2Time(elapsed_secs)<<"\n";
-
+    std::cout<<" The run took: "<<Nfunction::ConvertSecond2Time(elapsed_secs)<<"thread time and  ";
+#ifdef _OPENMP
+    double endwall_time = omp_get_wtime();
+    endwall_time = endwall_time - startwall_time;
+    std::cout<<Nfunction::ConvertSecond2Time(endwall_time)<<" wall time \n";
+#endif
 
     m_pState->GetCurvatureCalculator()->Initialize();
     double Final_energy = m_pState->GetEnergyCalculator()->CalculateAllLocalEnergy();
@@ -128,7 +144,9 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
         
         std::cout<<"---> possible source of code error: energy leak... "<<energy_leak<<" with real energy of "<<Final_energy<<"  and stored energy of "<<m_pState->GetEnergyCalculator()->GetEnergy()<<"\n";
     }
-    // check for volume
+
+    
+    
     double vol = 0;
     double g_c = 0;
     double t_a = 0;
@@ -137,13 +155,16 @@ for (int step = m_Initial_Step; step <= m_Final_Step; step++){
     g_c -= m_pState->GetVAHGlobalMeshProperties()->GetTotalMeanCurvature();
     t_a -= m_pState->GetVAHGlobalMeshProperties()->GetTotalArea();
 
-    if(fabs(vol) > 0.0001){
+    if (m_pState->GetVAHGlobalMeshProperties()->VolumeIsActive())
+    if(fabs(vol) > 0.0001 ){
         std::cout<<fabs(vol)<<" volume leak\n";
     }
+    if (m_pState->GetVAHGlobalMeshProperties()->GlobalCurvatureIsActive())
     if(fabs(g_c) > 0.0001)
     {
         std::cout<<fabs(g_c)<<" global curvature leak\n";
     }
+    if (m_pState->GetVAHGlobalMeshProperties()->AreaIsActive())
     if(fabs(t_a) > 0.0001)
     {
         std::cout<<fabs(t_a)<<" total area leak\n";

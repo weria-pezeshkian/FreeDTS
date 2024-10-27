@@ -94,10 +94,6 @@ double Apply_Osmotic_Pressure::GetEnergyChange(double oldarea, double oldvolume,
     double dv =  newvolume - oldvolume;
     return -m_P0*(m_V0*log(1+dv/m_TotalVolume)-dv);
 }
-void Apply_Osmotic_Pressure::UpdateArea_Volume(double oldarea, double oldvolume, double newarea, double newvolume) {
-    m_TotalVolume += newvolume-oldvolume;
-    m_TotalArea += newarea-oldarea;
-}
 std::string Apply_Osmotic_Pressure::CurrentState(){
     
     std::string state = GetBaseDefaultReadName() +" = "+ this->GetDerivedDefaultReadName();

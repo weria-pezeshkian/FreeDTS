@@ -21,10 +21,13 @@ class AbstractVolumeCoupling  {
 public:
     // Constructor that initializes the base class with global mesh properties
     AbstractVolumeCoupling(VAHGlobalMeshProperties *pVHA) : m_pVAH(pVHA), m_TotalVolume(pVHA->m_TotalVolume), m_TotalArea(pVHA->m_TotalArea) {
+        
+
     }
 
     // Virtual destructor to ensure proper cleanup of derived class objects
     virtual ~AbstractVolumeCoupling() {
+
     }
 
     // Pure virtual methods that must be implemented by derived classes
@@ -47,9 +50,6 @@ public:
     // Calculate the change in energy due to changes in area and volume
     virtual double GetEnergyChange(double oldarea, double oldvolume, double newarea, double newvolume) = 0;
 
-    // Update the total area and volume based on changes
-    virtual void UpdateArea_Volume(double oldarea, double oldvolume, double newarea, double newvolume) = 0;
-
     // Retrieve the default name of the derived class for logging or identification purposes
     virtual inline std::string GetDerivedDefaultReadName() = 0;
 
@@ -61,6 +61,8 @@ protected:
     
     double &m_TotalVolume;
     double &m_TotalArea;
+private:
+
 };
 
 // Class representing no volume coupling, used as a default or placeholder
@@ -83,8 +85,6 @@ public:
   //  void CalculateVolumeofALinkTriangles(links *p_link, double &vol, double &area) { return; }
     double GetCouplingEnergy() { return 0; }
     double GetEnergyChange(double oldarea, double oldvolume, double newarea, double newvolume) { return 0; }
-    void UpdateArea_Volume(double oldarea, double oldvolume, double newarea, double newvolume) { return; }
-
     // Retrieve the current state as a string
     std::string CurrentState() {
         return GetBaseDefaultReadName() + " = " + this->GetDerivedDefaultReadName();

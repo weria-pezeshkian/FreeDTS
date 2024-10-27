@@ -2,6 +2,8 @@
 #define AFX_FreeDTSRigidWallType_H
 #include <iostream>
 #include "AbstractBoundary.h"
+#include "NonequilibriumCommands.h"
+
 // Define a base class with a virtual function
 /*
 =======================================================
@@ -13,6 +15,7 @@ This class is a base class for rigid wall boundry
 */
 //---- a class for no box change
 class State;
+
 class TwoFlatParallelWall : public  AbstractBoundary {
 public:
     TwoFlatParallelWall(State* pState, double thickness, char direction);
@@ -24,6 +27,8 @@ public:
     bool MoveHappensWithinTheBoundary(double x, double y, double z, vertex* v);
     std::string CurrentState();
 
+    friend class NonequilibriumCommands; // Friendship declaration
+
 private:
     State* m_pState;
     double m_HalfThickness;
@@ -33,6 +38,7 @@ private:
 
     
 };
+
 
 class EllipsoidalShell : public  AbstractBoundary {
 public:
@@ -45,9 +51,37 @@ public:
     bool MoveHappensWithinTheBoundary(double dx, double dy, double dz, vertex* v);
     std::string CurrentState();
 
+    friend class NonequilibriumCommands; // Friendship declaration
+
 private:
     State* m_pState;
     double m_HalfThickness;
+    double m_R;
+    double m_A;
+    double m_B;
+    double m_C;
+    Vec3D m_COG;
+    Vec3D m_ElipScale;
+
+    
+};
+
+class EllipsoidalCore : public  AbstractBoundary {
+public:
+    EllipsoidalCore(State* pState, double r, double a, double b, double c);
+    ~EllipsoidalCore();
+    inline std::string GetDerivedDefaultReadName() {return "EllipsoidalCore";}
+    inline static std::string GetDefaultReadName() {return "EllipsoidalCore";}
+
+    void Initialize();
+    bool MoveHappensWithinTheBoundary(double dx, double dy, double dz, vertex* v);
+    std::string CurrentState();
+
+    
+    friend class NonequilibriumCommands; // Friendship declaration
+
+private:
+    State* m_pState;
     double m_R;
     double m_A;
     double m_B;

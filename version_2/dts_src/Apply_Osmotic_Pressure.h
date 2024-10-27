@@ -48,9 +48,6 @@ public:
     // Calculate the change in energy due to changes in area and volume
     double GetEnergyChange(double oldarea, double oldvolume, double newarea, double newvolume);
     
-    // Update the total area and volume based on changes
-    void UpdateArea_Volume(double oldarea, double oldvolume, double newarea, double newvolume);
-
     //=====
     
     

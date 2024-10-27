@@ -54,13 +54,19 @@
 #include "MESH.h"
 #include "Nfunction.h"
 //--- system evolution
+//-------vertex movies
 #include "AbstractVertexPositionIntegrator.h"
-#include "AbstractAlexanderMove.h"
-#include "AbstractInclusionPoseIntegrator.h"
-#include "AbstractVectorFieldsRotationMove.h"
 #include "EvolveVerticesByMetropolisAlgorithm.h"
+#include "EvolveVerticesByMetropolisAlgorithmWithOpenMPType1.h"
+//--- edge 
+#include "AbstractAlexanderMove.h"
 #include "AlexanderMoveByMetropolisAlgorithm.h"
+#include "AlexanderMoveByMetropolisAlgorithmWithOpenMP.h"
+// ---- inclusions
+#include "AbstractInclusionPoseIntegrator.h"
 #include "InclusionPoseUpdateByMetropolisAlgorithm.h"
+//--- vector field
+#include "AbstractVectorFieldsRotationMove.h"
 #include "VectorFieldsRotationByMetropolisAlgorithm.h"
 //---
 //--- I/O
@@ -82,6 +88,9 @@
 //-- dynamic box
 #include "AbstractDynamicBox.h"
 #include "PositionRescaleFrameTensionCoupling.h"
+#include "PositionRescaleIsotropicFrameTensionCouplingWithOpenMP.h"
+#include "PositionRescaleAnisotropicFrameTensionCoupling.h"
+#include "BoxSizeCouplingToHarmonicPotential.h"
 //-- dynamic topology
 #include "AbstractDynamicTopology.h"
 #include "Three_Edge_Scission.h"
@@ -114,6 +123,10 @@
 #include "AbstractExternalFieldOnInclusions.h"
 #include "ConstantExternalField.h"
 #include "ConstantExternalFieldOnVectorFields.h"
+//--- interaction with Substrate
+#include "AbstractVertexAdhesionToSubstrate.h"
+#include "SphericalVertexSubstrate.h"
+#include "FlatVertexSubstrate.h"
 //--- rigid boundries
 #include "AbstractBoundary.h"
 #include "RigidWallTypes.h"
@@ -125,7 +138,8 @@
 #include "RNG.h"
 #include "VAHGlobalMeshProperties.h"
 #include "InclusionType.h"
-
+//---  additional moves
+#include "NonequilibriumCommands.h"
 
 struct ParallelReplicaData {  // data structure for turning on and off certain moves
     ParallelReplicaData(){State = false;}
@@ -175,13 +189,16 @@ inline AbstractForceonVerticesfromInclusions *GetForceonVerticesfromInclusions()
 inline AbstractForceonVerticesfromVectorFields *GetForceonVerticesfromVectorFields()    {return m_pForceonVerticesfromVectorFields;}
 inline AbstractExternalFieldOnVectorFields *GetExternalFieldOnVectorFields()        {return m_pExternalFieldOnVectorFields;}
 inline AbstractExternalFieldOnInclusions *GetExternalFieldOnInclusions()        {return m_pExternalFieldOnInclusions;}
-
+    
+inline AbstractVertexAdhesionToSubstrate *GetVertexAdhesionToSubstrate()        {return m_pVertexAdhesionToSubstrate;}
 inline VAHGlobalMeshProperties              *GetVAHGlobalMeshProperties()        {return m_pVAHCalculator;}
 //---- supplementary integrators
 inline AbstractDynamicBox               *GetDynamicBox()                                {return m_pDynamicBox;}
 inline AbstractDynamicTopology          *GetDynamicTopology()                           {return m_pDynamicTopology;}
 inline AbstractOpenEdgeEvolution        *GetOpenEdgeEvolution()                         {return m_pOpenEdgeEvolution;}
 inline AbstractInclusionConversion      *GetInclusionConversion()                       {return m_pInclusionConversion;}
+
+inline NonequilibriumCommands           *GetNonequilibriumCommands()                    {return m_pNonequilibriumCommands;}
 
 
 inline AbstractBoundary                 *GetBoundary()                                  {return m_pBoundary;}
@@ -216,6 +233,9 @@ private:
 
     AbstractExternalFieldOnVectorFields *m_pExternalFieldOnVectorFields;
     AbstractExternalFieldOnInclusions *m_pExternalFieldOnInclusions;
+    
+    AbstractVertexAdhesionToSubstrate *m_pVertexAdhesionToSubstrate;
+
 //--- Integrators of different degree of freedom
     AbstractAlexanderMove               *m_pAlexanderMove;
     AbstractVertexPositionIntegrator    *m_pVertexPositionIntegrator;
@@ -249,6 +269,8 @@ private:
     AbstractCurvature             *m_pCurvatureCalculations;
     AbstractSimulation            *m_pSimulation;
     AbstractEnergy                *m_pEnergyCalculator;
+    
+    NonequilibriumCommands        *m_pNonequilibriumCommands;
 
 //--- accessory objects
     RNG      *m_RandomNumberGenerator;

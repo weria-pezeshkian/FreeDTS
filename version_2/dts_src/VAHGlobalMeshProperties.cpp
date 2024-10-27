@@ -12,13 +12,63 @@ VAHGlobalMeshProperties::VAHGlobalMeshProperties() :
                                                                   m_AreaIsActive(false),
                                                                   m_GlobalCurvatureIsActive(false){
 
+#ifdef _OPENMP
+        omp_init_lock(&m_VLock);  // Initialize the lock
+        omp_init_lock(&m_ALock);  // Initialize the lock
+        omp_init_lock(&m_CGLock);  // Initialize the lock
+#endif
 
 }
 VAHGlobalMeshProperties::~VAHGlobalMeshProperties() {
-    
+#ifdef _OPENMP
+    omp_destroy_lock(&m_VLock);  // Destroy the lock when done
+    omp_destroy_lock(&m_ALock);  // Destroy the lock when done
+    omp_destroy_lock(&m_CGLock);  // Destroy the lock when done
+#endif
 }
 void VAHGlobalMeshProperties::Initialize(State* pState){
     m_pState = pState;
+    return;
+}
+void VAHGlobalMeshProperties::Add2Volume(double vol){
+#ifdef _OPENMP
+    omp_set_lock(&m_VLock);  // Lock before updating shared variables
+    
+    // Update m_TotalVolume
+    m_TotalVolume += vol;
+    omp_unset_lock(&m_VLock);  // Unlock after updating shared variables
+#else
+    // If OpenMP is not available, update normally without locks
+    m_TotalVolume += vol;
+#endif
+    
+    return;
+}
+void VAHGlobalMeshProperties::Add2TotalArea(double area){
+#ifdef _OPENMP
+    omp_set_lock(&m_ALock);  // Lock before updating shared variables
+
+    // Update  m_TotalArea
+    m_TotalArea += area;
+    omp_unset_lock(&m_ALock);  // Unlock after updating shared variables
+#else
+    // If OpenMP is not available, update normally without locks
+    m_TotalArea += area;
+#endif
+    return;
+}
+void VAHGlobalMeshProperties::Add2GlobalCurvature(double CG){
+#ifdef _OPENMP
+    omp_set_lock(&m_CGLock);  // Lock before updating shared variables
+
+    // Update global curvature
+    m_TotalCurvature += CG;
+
+    omp_unset_lock(&m_CGLock);  // Unlock after updating shared variables
+#else
+    // If OpenMP is not available, update normally without locks
+    m_TotalCurvature += CG;
+#endif
     return;
 }
 void VAHGlobalMeshProperties::CalculateAVertexRingContributionToGlobalVariables(vertex *p_vertex, double &vol, double &area, double& curvature){

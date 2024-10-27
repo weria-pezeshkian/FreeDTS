@@ -1,33 +1,37 @@
+
 #include "RNG.h"
+// Constructor
+RNG::RNG(int seed) : m_seed(seed) {
+    // Initialize the generator based on the RNG type
+    #if RNGTYPE == UNIFORMTYPE1
+        m_generator.seed(m_seed);  // Use the seed to initialize the generator
+        m_uniform_dist = std::uniform_real_distribution<double>(0.0, 1.0);  // Uniform distribution between 0 and 1
+    #elif RNGTYPE == UNIFORMTYPE0
+        srand(m_seed);  // Seed rand() with the given seed
+    #endif
+}
 
-RNG::RNG(int seed) : m_Seed(seed) {
-}
-void RNG::Initialize(){
-    // Initialize random number generator based on RNGTYPE
-#if RNGTYPE == UNIFROMTYPE1
-    std::default_random_engine generator(m_Seed);
-    m_generator = generator;
-#elif RNGTYPE == UNIFROMTYPE0
-    srand(m_Seed);
-#endif
-}
+// Uniform RNG generator for doubles in range [0, A)
 double RNG::UniformRNG(double A) {
-#if RNGTYPE == UNIFROMTYPE1
-    return A * (m_distribution(m_generator));
-#elif RNGTYPE == UNIFROMTYPE0
-    return A * (double(rand() % 2000000) / 2000000.0);
-#endif
+    #if RNGTYPE == UNIFORMTYPE1
+        return A * m_uniform_dist(m_generator);  // Use C++11 uniform distribution
+    #elif RNGTYPE == UNIFORMTYPE0
+        return A * (static_cast<double>(rand()) / RAND_MAX);  // Use rand() scaled to [0, A)
+    #endif
 }
 
+// Uniform RNG generator for integers in range [0, a)
 int RNG::IntRNG(int a) {
-#if RNGTYPE == UNIFROMTYPE1
-    return int(a * (m_distribution(m_generator)));
-#elif RNGTYPE == UNIFROMTYPE0
-    return rand() % a;
-#endif
+    #if RNGTYPE == UNIFORMTYPE1
+        std::uniform_int_distribution<int> int_dist(0, a - 1);
+        return int_dist(m_generator);  // Use C++11 uniform int distribution
+    #elif RNGTYPE == UNIFORMTYPE0
+        return rand() % a;  // Use rand() to generate integer in [0, a)
+    #endif
 }
 
+// Bernoulli RNG for a binary outcome (true/false)
 bool RNG::BinRNG() {
-    // Generate a random number between 0 and 1, and return true if it's greater than 0.5
-    return UniformRNG(1) > 0.5;
+    // Generate a uniform random number in range [0, 1] and return true if greater than 0.5
+    return UniformRNG(1.0) > 0.5;
 }

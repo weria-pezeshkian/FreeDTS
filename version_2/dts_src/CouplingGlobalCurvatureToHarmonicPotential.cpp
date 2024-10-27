@@ -40,35 +40,27 @@ void CouplingGlobalCurvatureToHarmonicPotential::Initialize(State* pState) {
         m_TotalCurvature += curv*area;
     }
 
-    double dh=(m_TotalCurvature-m_gC0*m_TotalArea);
-    m_Energy= m_K*dh*dh/(m_TotalArea);
 
     return;
 }
 double CouplingGlobalCurvatureToHarmonicPotential::GetCouplingEnergy(){
     
     double dh=(m_TotalCurvature-m_gC0*m_TotalArea);
-    m_Energy =m_K/(m_TotalArea)*dh*dh;
     
-    return m_Energy;
+    return m_K/(m_TotalArea)*dh*dh;
 }
 // when a vertex moves or a link flips or any other changes, we can see the changes in the total area and total mean curavture:
 // this function can tell us how much this changes cost energy but it does not update the change since it can be rejected.
 double CouplingGlobalCurvatureToHarmonicPotential::CalculateEnergyChange(double D_area, double D_curvature)
 {
-    double dh=(m_TotalCurvature+D_curvature-m_gC0*(m_TotalArea+D_area));        
-    return m_K/((m_TotalArea + D_area))*dh*dh-m_Energy;
-}
-// this function update the changes if the move get accetped
-void CouplingGlobalCurvatureToHarmonicPotential::UpdateEnergyChange(double delta_area, double delta_curvature){
+    double dh2 = m_TotalCurvature+D_curvature-m_gC0*(m_TotalArea+D_area);
+    double dh1 = m_TotalCurvature-m_gC0*m_TotalArea;
+    dh2 = dh2 * dh2/(m_TotalArea + D_area);
+    dh1 = dh1 * dh1/m_TotalArea;
+
+    double de = dh2 - dh1;
     
-    double de=0;
-    m_TotalArea+= delta_area;
-    m_TotalCurvature+= delta_curvature;
-    double dh=(m_TotalCurvature-m_gC0*m_TotalArea);
-    m_Energy= m_K*dh*dh/(m_TotalArea);
-    
-    return;
+    return m_K * de;
 }
 std::string CouplingGlobalCurvatureToHarmonicPotential::CurrentState(){
     

@@ -23,11 +23,11 @@ and calculates the total energy change due to volume modifications.
 
 ========================================================
 */
+#include "AbstractVolumeCoupling.h"
 #include "SimDef.h"
 #include "vertex.h"
 #include "triangle.h"
 #include "links.h"
-#include "AbstractVolumeCoupling.h"
 
 
 class State;
@@ -64,10 +64,6 @@ public:
     // Calculate the change in energy due to changes in area and volume
     double GetEnergyChange(double oldarea, double oldvolume, double newarea, double newvolume);
     
-    // Update the total area and volume based on changes
-    void UpdateArea_Volume(double oldarea, double oldvolume, double newarea, double newvolume);
-
-    
 private:
     // Calculate the volume of a single triangle element
   //  double CalculateSingleTriangleVolume(triangle *pTriangle);
@@ -80,6 +76,8 @@ private:
     double m_TargetV;     // Target reduced volume
     double m_DeltaP;      // Pressure difference
     double m_6SQPI;       // Precomputed constant 1/(6*sqrt(pi))
+    
+
 
 };
 

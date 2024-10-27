@@ -15,6 +15,7 @@ State::State(std::vector<std::string> argument) :
 // make voxels
       m_pVoxelization(new Voxelization<vertex>()),
       m_pSimulation(new MC_Simulation(this)),
+      m_pNonequilibriumCommands(new NonequilibriumCommands(this)),
       m_pTimeSeriesDataOutput(new TimeSeriesDataOutput(this)),  // Initialize TimeSeriesDataOutput
       m_pTimeSeriesLogInformation(new TimeSeriesLogInformation(this)),  // Initialize TimeSeriesLogInformation
       m_pRestart(new Restart(this)),  // Initialize Restart
@@ -31,6 +32,7 @@ State::State(std::vector<std::string> argument) :
       m_pForceonVerticesfromVectorFields(new NoVFForce),  // Initialize ForceonVerticesfromvectorfields
       m_pExternalFieldOnVectorFields(new NoExternalFieldOnVectorFields),  // Initialize ExternalFieldOnVectorFields
       m_pExternalFieldOnInclusions(new NoExternalFieldOnInclusions),  // Initialize ExternalFieldOnVectorFields
+      m_pVertexAdhesionToSubstrate(new NoVertexAdhesionCoupling),  // Initialize ExternalFieldOnVectorFields
       m_pApplyConstraintBetweenGroups(new NoConstraint),  // Initialize ApplyConstraintBetweenGroups
       m_pBoundary(new PBCBoundary),  // Initialize Boundary
 
@@ -95,6 +97,7 @@ State::~State()
     delete m_pForceonVerticesfromVectorFields;
     delete m_pExternalFieldOnVectorFields;
     delete m_pExternalFieldOnInclusions;
+    delete m_pVertexAdhesionToSubstrate;
     delete m_pApplyConstraintBetweenGroups;
     delete m_pBoundary;
     delete m_pVertexPositionIntegrator;
@@ -109,6 +112,7 @@ State::~State()
     delete m_pEnergyCalculator;
     delete m_pSimulation;
     delete m_pVoxelization;
+    delete m_pNonequilibriumCommands;
 }
 bool State::ExploreArguments(std::vector<std::string> &argument){
     /*
@@ -191,6 +195,14 @@ bool State::ExploreArguments(std::vector<std::string> &argument){
         else if(flag == THREAD_FLAG){
             
             m_Total_no_Threads = Nfunction::String_to_Int(argument[i+1]);
+            #ifdef _OPENMP
+            if(omp_get_num_procs()<m_Total_no_Threads){
+                std::cout<<"---> warning, the number of requested threads is larger then the total physical cores \n";
+            }
+            omp_set_num_threads(m_Total_no_Threads); // Set the number of threads
+            #endif
+            //std::cout<<omp_get_num_procs()<<"\n";
+
         }
         else if(flag == INDEX_FLAG){   // get the index file and also check if the file exist
             m_IndexFileName = argument[i+1];
@@ -344,10 +356,15 @@ while (input >> firstword) {
 //---- position update
         else if(firstword == AbstractVertexPositionIntegrator::GetBaseDefaultReadName()) {
             input>>str>>type;
-            if(type == EvolveVerticesByMetropolisAlgorithm::GetDefaultReadName()){  // EvolveVerticesByMetropolisAlgorithm
+            if(type == EvolveVerticesByMetropolisAlgorithm::GetDefaultReadName()){  // MetropolisAlgorithm
                 double rate_surf,rate_edge,dr;
                 input >> rate_surf >> rate_edge >> dr;
                 m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithm(this, rate_surf, rate_edge, dr);
+            }
+           else if (type == EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::GetDefaultReadName()){  // MetropolisAlgorithmWithOpenMPType1
+                double rate_surf,rate_edge,dr;
+                input >> rate_surf >> rate_edge >> dr;
+                m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(this, rate_surf, rate_edge, dr);
             }
             else{
                 std::cout<<"---> error: unknown method for vertex move "<<type<<"\n";
@@ -364,6 +381,11 @@ while (input >> firstword) {
                     double rate;
                     input >> rate;
                     m_pAlexanderMove = new AlexanderMoveByMetropolisAlgorithm(this, rate);
+                }
+                else if(type == AlexanderMoveByMetropolisAlgorithmWithOpenMP::GetDefaultReadName()){  // MetropolisAlgorithm
+                    double rate;
+                    input >> rate;
+                    m_pAlexanderMove = new AlexanderMoveByMetropolisAlgorithmWithOpenMP(this, rate);
                 }
                 else{
                     std::cout<<"---> error: unknown method for Alexander move "<<type<<"\n";
@@ -496,8 +518,26 @@ while (input >> firstword) {
                 input >> period >> force >> direction;
                 m_pDynamicBox = new PositionRescaleFrameTensionCoupling(period, force, direction, this);
             }
-            else if(type == "No") {
+            else if (type == PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::GetDefaultReadName()) {
                     
+                input >> period >> force >> direction;
+                m_pDynamicBox = new PositionRescaleIsotropicFrameTensionCouplingWithOpenMP(period, force, direction, this);
+            }
+            else if (type == PositionRescaleAnisotropicFrameTensionCoupling::GetDefaultReadName()) {
+                double force_1 = 0;
+                double force_2 = 0;
+                double force_3 = 0;
+                input >> period >> force_1 >> force_2 >> force_3 >> direction;
+                m_pDynamicBox = new PositionRescaleAnisotropicFrameTensionCoupling(period, force_1, force_2, force_3, direction, this);
+            }
+            else if (type == BoxSizeCouplingToHarmonicPotential::GetDefaultReadName()) {
+                double k = 0;
+                double a0 = 0;
+                input >> period >> k >> a0  >> direction;
+                m_pDynamicBox = new BoxSizeCouplingToHarmonicPotential(period, k, a0, direction, this);
+            }
+            else if(type == NoBoxChange::GetDefaultReadName()) {
+                    // has been assigned above
             }
             else{
                 std::cout<<"--> error: unknown dynamic box method: "<<type<<std::endl;
@@ -578,14 +618,20 @@ while (input >> firstword) {
             if(type == TwoFlatParallelWall::GetDefaultReadName()){   // " "TwoFlatParallelWall" "
                 double thickness;
                 char direction;
-                input>>str>>thickness>>direction;
+                input>>thickness>>direction;
                 m_pBoundary = new TwoFlatParallelWall(this, thickness,direction);
             }
             else if(type == EllipsoidalShell::GetDefaultReadName()){   // " "EllipsoidalShell" "
                 double thickness, r, a, b, c;
-                input>> str >> thickness >> r >> a >> b >> c;
+                input >> thickness >> r >> a >> b >> c;
                 
                 m_pBoundary = new EllipsoidalShell(this, thickness, r, a, b, c);
+            }
+            else if(type == EllipsoidalCore::GetDefaultReadName()){   // " "EllipsoidalShell" "
+                double  r, a, b, c;
+                input >>  r >> a >> b >> c;
+                
+                m_pBoundary = new EllipsoidalCore(this, r, a, b, c);
             }
             else {
                 std::cout<<"---> error: unknown Boundary type: "<<type<<std::endl;
@@ -593,6 +639,10 @@ while (input >> firstword) {
                 return false;
             }
             getline(input,rest);
+        }
+        else if(firstword == "NonequilibriumCommands"){
+            getline(input,rest);
+            m_pNonequilibriumCommands->LoadCommand(rest);
         }
 // end boundry condition
 //ConstraintBetweenGroups
@@ -661,6 +711,31 @@ while (input >> firstword) {
             }
 
             getline(input,rest);
+
+        }
+        else if(firstword == AbstractVertexAdhesionToSubstrate::GetBaseDefaultReadName() ) { // "ConstantField"
+            
+            input >> str >> type;
+            if(type == SphericalVertexSubstrate::GetDefaultReadName() ){
+
+                getline(input,rest);
+                m_pVertexAdhesionToSubstrate = new SphericalVertexSubstrate(rest);
+            }
+            else if(type == FlatVertexSubstrate::GetDefaultReadName() ){
+
+                getline(input,rest);
+                m_pVertexAdhesionToSubstrate = new FlatVertexSubstrate(rest);
+            }
+            else if(type == "No"){
+                getline(input,rest);
+            }
+            else{
+                std::cout<<" unknown AdhesionToSubstrate method "<<std::endl;
+                m_NumberOfErrors++;
+                getline(input,rest);
+                return false;
+            }
+
 
         }
 //-------
@@ -965,7 +1040,7 @@ bool State::Initialize(){
 
         }
     
-        m_RandomNumberGenerator->Initialize();
+       // m_RandomNumberGenerator->Initialize();
         // Generate mesh from the mesh blueprint
         m_Mesh.GenerateMesh(mesh_blueprint);
         m_pVoxelization->SetBox(m_pMesh->GetBox());
