@@ -9,8 +9,8 @@ Version 1 has been finalized, and we are now developing Version 2. The complete 
 [About FreeDTS](https://github.com/weria-pezeshkian/FreeDTS/wiki/About-FreeDTS) \
 [Download & Install](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
-[User Manual v1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-1) \
-[User Manual v2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Manual-for-version-2) \
+[User Manual v1](https://github.com/weria-pezeshkian/FreeDTS/wiki/User-Manual-for-version-1) \
+[User Manual v2](https://github.com/weria-pezeshkian/FreeDTS/wiki/User-Manual-for-version-2) \
 [Tutorials version 1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-(version-1))  \
 [Tutorials version 2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Workshop-2024) 
 
