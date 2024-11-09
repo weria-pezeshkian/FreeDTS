@@ -1,0 +1,12 @@
+Integrator                      = MC
+MC_Moves                        = 1 1 1
+Initial_Step                    = 1
+Final_Step                      = 200000
+Display_periodic                = 1000
+OutPutEnergy_periodic           = 100
+Restart_periodic                = 10000
+Kappa                           = 10 0
+OutPutTRJ_TSI                   = 1000  10  TrjTSI
+GeneralOutputFilename           = output
+Cell_Size                       = 2.5 2.6 2.5
+Volume_Constraint               = on 1000     0  5000     0.3
