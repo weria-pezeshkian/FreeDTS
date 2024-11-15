@@ -64,6 +64,8 @@ public:
     // Calculate the change in energy due to changes in area and volume
     double GetEnergyChange(double oldarea, double oldvolume, double newarea, double newvolume);
     
+    friend class NonequilibriumCommands; // Friendship declaration
+
 private:
     // Calculate the volume of a single triangle element
   //  double CalculateSingleTriangleVolume(triangle *pTriangle);

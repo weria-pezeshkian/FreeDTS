@@ -154,6 +154,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     Vec3D Dx(dx,dy,dz);
     double dE_force_from_inc  = m_pState->GetForceonVerticesfromInclusions()->Energy_of_Force(pvertex, Dx);
     double dE_force_from_vector_fields  = m_pState->GetForceonVerticesfromVectorFields()->Energy_of_Force(pvertex, Dx);
+    double dE_force_on_vertex  = m_pState->GetForceonVertices()->Energy_of_Force(pvertex, Dx);
 
 //----> Move the vertex;
         pvertex->PositionPlus(dx,dy,dz);
@@ -225,7 +226,7 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     double diff_energy = new_energy - old_energy;
     //std::cout<<diff_energy<<" dif en \n";
     //--> sum of all the energies
-    double tot_diff_energy = diff_energy + dE_Cgroup + dE_force_from_inc + dE_force_from_vector_fields + dE_volume + dE_t_area + dE_g_curv ;
+    double tot_diff_energy = diff_energy + dE_Cgroup + dE_force_on_vertex + dE_force_from_inc + dE_force_from_vector_fields + dE_volume + dE_t_area + dE_g_curv ;
     double U = m_Beta * tot_diff_energy - m_DBeta;
     //---> accept or reject the move
     if(U <= 0 || exp(-U) > temp ) {

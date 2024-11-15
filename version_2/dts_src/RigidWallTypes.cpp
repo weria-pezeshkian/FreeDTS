@@ -74,7 +74,12 @@ std::string TwoFlatParallelWall::CurrentState(){
 
     return state;
 }
+std::string TwoFlatParallelWall::CurrentStateParameters(){
+    
+    std::string state = Nfunction::D2S(2*m_HalfThickness) +" "+m_Direction;
 
+    return state;
+}
 //===== EllipsoidalShell implementations
 EllipsoidalShell::EllipsoidalShell(State* pState, double thickness, double r, double a, double b, double c)  :
             m_pState(pState),
@@ -167,7 +172,11 @@ std::string EllipsoidalShell::CurrentState(){
     state = state +" "+ Nfunction::D2S(2*m_HalfThickness) +" "+ Nfunction::D2S(m_R) +" "+ Nfunction::D2S(m_A) +" "+ Nfunction::D2S(m_B) +" "+ Nfunction::D2S(m_C);
     return state;
 }
-
+std::string EllipsoidalShell::CurrentStateParameters(){
+    
+    std::string state = Nfunction::D2S(2*m_HalfThickness) +" "+ Nfunction::D2S(m_R) +" "+ Nfunction::D2S(m_A) +" "+ Nfunction::D2S(m_B) +" "+ Nfunction::D2S(m_C);
+    return state;
+}
 //===== EllipsoidalCore implementations
 EllipsoidalCore::EllipsoidalCore(State* pState, double r, double a, double b, double c)  :
             m_pState(pState),
@@ -244,4 +253,8 @@ std::string EllipsoidalCore::CurrentState(){
     state = state +" "+ Nfunction::D2S(sqrt(m_R)) +" "+ Nfunction::D2S(1/m_A) +" "+ Nfunction::D2S(1/m_B) +" "+ Nfunction::D2S(1/m_C);
     return state;
 }
-
+std::string EllipsoidalCore::CurrentStateParameters(){
+    
+    std::string state = Nfunction::D2S(sqrt(m_R)) +" "+ Nfunction::D2S(1/m_A) +" "+ Nfunction::D2S(1/m_B) +" "+ Nfunction::D2S(1/m_C);
+    return state;
+}

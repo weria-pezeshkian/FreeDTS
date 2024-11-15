@@ -57,6 +57,7 @@ public:
     
 // some helpful static functions
     static double SquareDistanceBetweenTwoVertices(vertex *p_v1, vertex* p_v2, Vec3D Box);
+    double SquareDistanceBetweenTwoVertices(vertex * v1,vertex * v2);
 
 
 
@@ -80,7 +81,8 @@ public:
     MeshBluePrint Convert_Mesh_2_BluePrint(MESH *mesh);
     std::vector <InclusionType*> m_pInclusionType;
     std::vector <InclusionType> m_InclusionType;
-    
+    bool CheckMesh(double min_l, double max_l, double min_angle, Voxelization<vertex>  *pVoxelization);
+
 protected:
     std::vector<vertex*>        m_pActiveV; // all the active vertices edge + surf
     std::vector<vertex*>        m_pSurfV; // all the active vertices  surf

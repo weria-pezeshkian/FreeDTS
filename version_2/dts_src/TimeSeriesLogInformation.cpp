@@ -80,6 +80,8 @@ void TimeSeriesLogInformation::WriteStartingState(){
     m_TimeSeriesFile<<m_pState->GetApplyConstraintBetweenGroups()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetForceonVerticesfromInclusions()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetForceonVerticesfromVectorFields()->CurrentState()<<std::endl;
+    m_TimeSeriesFile<<m_pState->GetForceonVertices()->CurrentState()<<std::endl;
+
     m_TimeSeriesFile<<m_pState->GetExternalFieldOnVectorFields()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetExternalFieldOnInclusions()->CurrentState()<<std::endl;
     m_TimeSeriesFile<<m_pState->GetInclusionConversion()->CurrentState()<<std::endl;
@@ -97,6 +99,7 @@ void TimeSeriesLogInformation::WriteStartingState(){
     m_TimeSeriesFile<<m_pState->GetRestart()->CurrentState()<<std::endl;
 
     m_TimeSeriesFile<<";------------------------------------------  "<<std::endl;
+    m_TimeSeriesFile<<"; the total number of thread used in this run was: "<<m_pState->GetThreads_Number()<<std::endl;
 
 }
 

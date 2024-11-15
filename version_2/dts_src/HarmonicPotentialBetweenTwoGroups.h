@@ -3,6 +3,8 @@
 #include "SimDef.h"
 #include "MESH.h"
 #include "AbstractApplyConstraintBetweenGroups.h"
+#include "NonequilibriumCommands.h"
+
 /*
  Weria Pezeshkian (weria.pezeshkian@gmail.com)
  Copyright (c) Weria Pezeshkian
@@ -24,6 +26,10 @@ public:
     inline  std::string GetDerivedDefaultReadName() {return "HarmonicPotentialBetweenTwoGroups";}
     inline static std::string GetDefaultReadName() {return "HarmonicPotentialBetweenTwoGroups";}
     std::string CurrentState();
+    
+    
+    friend class NonequilibriumCommands; // Friendship declaration
+
     //=====
 private:  
     Vec3D COMVertexGroup(std::vector<vertex *>);

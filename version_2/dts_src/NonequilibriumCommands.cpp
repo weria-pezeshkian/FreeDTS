@@ -42,20 +42,170 @@ bool NonequilibriumCommands::LoadCommand(std::string strcommand) {
         // Use lambda to store the function and argument
         m_FunctionContainer.push_back([this, Rate, Dr]() { ExpandEllipsoidalCoreWall(Rate, Dr); });
     }
+    else if (command_arguments[0] == "ThinningEllipsoidalShell") {
+        // Convert the second argument to an integer (e.g., X value)
+        if (command_arguments.size() < 3) {
+            std::cout << "  error-> NonequilibriumCommands ExpandEllipsoidalCoreWall: not enough arguments in the input file" << std::endl;
+            return false;
+        }
+
+        int Rate = Nfunction::String_to_Int(command_arguments[1]);
+        double Dr = Nfunction::String_to_Double(command_arguments[2]);
+
+        // Use lambda to store the function and argument
+        m_FunctionContainer.push_back([this, Rate, Dr]() { ThinningEllipsoidalShell(Rate, Dr); });
+    }
+    else if (command_arguments[0] == "IncrementHarmonicPotentialBetweenTwoGroups") {
+        // Convert the second argument to an integer (e.g., X value)
+        if (command_arguments.size() < 3) {
+            std::cout << "  error-> NonequilibriumCommands IncrementHarmonicPotentialBetweenTwoGroups: not enough arguments in the input file" << std::endl;
+            return false;
+        }
+
+        int Rate = Nfunction::String_to_Int(command_arguments[1]);
+        double Dr = Nfunction::String_to_Double(command_arguments[2]);
+
+        // Use lambda to store the function and argument
+        m_FunctionContainer.push_back([this, Rate, Dr]() { IncrementHarmonicPotentialBetweenTwoGroups(Rate, Dr); });
+    }
+    else if (command_arguments[0] == "IncrementVolumeCouplingSecondOrder") {
+        // Convert the second argument to an integer (e.g., X value)
+        if (command_arguments.size() < 3) {
+            std::cout << "  error-> NonequilibriumCommands IncrementVolumeCouplingSecondOrder: not enough arguments in the input file" << std::endl;
+            return false;
+        }
+
+        int Rate = Nfunction::String_to_Int(command_arguments[1]);
+        double Dr = Nfunction::String_to_Double(command_arguments[2]);
+
+        // Use lambda to store the function and argument
+        m_FunctionContainer.push_back([this, Rate, Dr]() { IncrementVolumeCouplingSecondOrder(Rate, Dr); });
+    }
+    else if (command_arguments[0] == "ChangeTemperatureConstantRate") {
+        // Convert the second argument to an integer (e.g., X value)
+        if (command_arguments.size() < 5) {
+            std::cout << "  error-> NonequilibriumCommands ChangeTemperatureConstantRate: not enough arguments in the input file" << std::endl;
+            return false;
+        }
+
+        int Rate = Nfunction::String_to_Int(command_arguments[1]);
+        double DT = Nfunction::String_to_Double(command_arguments[2]);
+
+        // Use lambda to store the function and argument
+        m_FunctionContainer.push_back([this, Rate, DT]() { ChangeTemperatureWithConstantRate(Rate, DT ); });
+    }
 
     return true;
 }
+void NonequilibriumCommands::ThinningEllipsoidalShell(int rate, double dr) {
 
-void NonequilibriumCommands::ExpandEllipsoidalCoreWall(int rate, double dr) {
-    
-    if(m_ActiveSimStep%rate != 0){
+    // Skip steps based on rate
+    if (m_ActiveSimStep % rate != 0) {
         return;
     }
+
+    // Get boundary from state
     AbstractBoundary* pBoundary = m_pState->GetBoundary();
+    
+    // Check if the boundary is an EllipsoidalCore
+    if (EllipsoidalShell* pB = dynamic_cast<EllipsoidalShell*>(pBoundary)) {
+        
+        // Check if all vertices are within the boundary
+        bool allVerticesInside = std::all_of(m_pState->GetMesh()->GetActiveV().begin(),
+                                             m_pState->GetMesh()->GetActiveV().end(),
+                                             [&pB](vertex* v) {
+                                                 return pB->MoveHappensWithinTheBoundary(0, 0, 0, v);
+                                             });
+
+        // If all vertices are inside the boundary, update the radius
+        if (allVerticesInside) {
+            pB->m_HalfThickness -= dr;
+
+        }
+
+    } else {
+        // Error message if the boundary is not an EllipsoidalCore
+        std::cerr << "---> Error: Attempted to expand an EllipsoidalShell when no EllipsoidalShell is present in the boundary." << std::endl;
+    }
+}
+void NonequilibriumCommands::ExpandEllipsoidalCoreWall(int rate, double dr) {
+
+    // Skip steps based on rate
+    if (m_ActiveSimStep % rate != 0) {
+        return;
+    }
+
+    // Get boundary from state
+    AbstractBoundary* pBoundary = m_pState->GetBoundary();
+    
+    // Check if the boundary is an EllipsoidalCore
     if (EllipsoidalCore* pB = dynamic_cast<EllipsoidalCore*>(pBoundary)) {
-        pB->m_R = pB->m_R + dr;
+        
+        // Check if all vertices are within the boundary
+        bool allVerticesInside = std::all_of(m_pState->GetMesh()->GetActiveV().begin(),
+                                             m_pState->GetMesh()->GetActiveV().end(),
+                                             [&pB](vertex* v) {
+                                                 return pB->MoveHappensWithinTheBoundary(0, 0, 0, v);
+                                             });
+
+        // If all vertices are inside the boundary, update the radius
+        if (allVerticesInside) {
+            pB->m_R += dr;
+        }
+
+    } else {
+        // Error message if the boundary is not an EllipsoidalCore
+        std::cerr << "---> Error: Attempted to expand an EllipsoidalCoreWall when no EllipsoidalCore is present in the boundary." << std::endl;
     }
-    else {
-        std::cout << "---> warning (maybe an error): you have called changes in EllipsoidalCoreWall while such a wall has not been called." << std::endl;
+}
+void NonequilibriumCommands::IncrementHarmonicPotentialBetweenTwoGroups(int rate, double dr) {
+
+    // Skip steps based on rate
+    if (m_ActiveSimStep % rate != 0) {
+        return;
     }
+
+    // Get boundary from state
+    AbstractApplyConstraintBetweenGroups* pConstraintBetweenGroups = m_pState->GetApplyConstraintBetweenGroups();
+    
+    // Check if the boundary is an EllipsoidalCore
+    if (HarmonicPotentialBetweenTwoGroups* pB = dynamic_cast<HarmonicPotentialBetweenTwoGroups*>(pConstraintBetweenGroups)) {
+            pB->m_L0 += dr;
+
+    } else {
+        // Error message if the boundary is not an EllipsoidalCore
+        std::cerr << "---> Error: Attempted to expand an IncrementHarmonicPotentialBetweenTwoGroups when not applied." << std::endl;
+    }
+}
+void NonequilibriumCommands::IncrementVolumeCouplingSecondOrder(int rate, double dr) {
+
+    // Skip steps based on rate
+    if (m_ActiveSimStep % rate != 0) {
+        return;
+    }
+
+    // Get boundary from state
+    AbstractVolumeCoupling* pVolumeCouplingSecondOrder = m_pState->GetVolumeCoupling();
+    
+    // Check if the boundary is an EllipsoidalCore
+    if (VolumeCouplingSecondOrder* pB = dynamic_cast<VolumeCouplingSecondOrder*>(pVolumeCouplingSecondOrder)) {
+            pB->m_TargetV += dr;
+
+    } else {
+        // Error message if the boundary is not an EllipsoidalCore
+        std::cerr << "---> Error: Attempted to expand an IncrementHarmonicPotentialBetweenTwoGroups when not applied." << std::endl;
+    }
+}
+void NonequilibriumCommands::ChangeTemperatureWithConstantRate(int rate, double DT) {
+
+    // Skip steps based on rate
+    if (m_ActiveSimStep % rate != 0) {
+        return;
+    }
+    double beta =  m_pState->GetSimulation()->GetBeta();
+    beta += DT;
+    m_pState->GetSimulation()->SetBeta(beta, m_pState->GetSimulation()->GetDBeta());
+
+    //    double m_MinLength2;
+    //double m_MaxLength2;
 }

@@ -26,7 +26,7 @@ public:
     void Initialize();
     bool MoveHappensWithinTheBoundary(double x, double y, double z, vertex* v);
     std::string CurrentState();
-
+    std::string CurrentStateParameters();
     friend class NonequilibriumCommands; // Friendship declaration
 
 private:
@@ -50,6 +50,8 @@ public:
     void Initialize();
     bool MoveHappensWithinTheBoundary(double dx, double dy, double dz, vertex* v);
     std::string CurrentState();
+    std::string CurrentStateParameters();
+
 
     friend class NonequilibriumCommands; // Friendship declaration
 
@@ -76,6 +78,8 @@ public:
     void Initialize();
     bool MoveHappensWithinTheBoundary(double dx, double dy, double dz, vertex* v);
     std::string CurrentState();
+    std::string CurrentStateParameters();
+
 
     
     friend class NonequilibriumCommands; // Friendship declaration

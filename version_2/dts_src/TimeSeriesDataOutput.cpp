@@ -72,6 +72,9 @@ and false if the periodic condition is not met or if there is an error writing t
     if (m_pState->GetDynamicTopology()->GetDerivedDefaultReadName() != "No") {
         m_TimeSeriesFile <<m_pState->GetDynamicTopology()->GetSurfaceGenus()<<"  ";
     }
+    if (m_pState->GetBoundary()->GetDerivedDefaultReadName() != "PBC") {
+        m_TimeSeriesFile <<m_pState->GetBoundary()->CurrentStateParameters()<<"  ";
+    }
     m_TimeSeriesFile<<std::endl;
     
     return true;
@@ -130,7 +133,9 @@ bool TimeSeriesDataOutput::OpenFile(bool clearfile) {
         if (m_pState->GetDynamicTopology()->GetDerivedDefaultReadName() != "No") {
             m_TimeSeriesFile << " surface_genus ";
         }
-
+        if (m_pState->GetBoundary()->GetDerivedDefaultReadName() != "PBC") {
+            m_TimeSeriesFile <<" Boundary Info ";
+        }
         m_TimeSeriesFile << std::endl;
     }
 

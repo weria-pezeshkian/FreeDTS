@@ -67,6 +67,14 @@ bool MC_Simulation::do_Simulation(){
 #endif
 // Your OpenMP parallel code here
 
+    if(!m_pState->GetMesh()->CheckMesh(m_MinLength2, m_MaxLength2, m_MinAngle, m_pState->GetVoxelization())){
+        
+        std::cout << "---> error: The  mesh quality is insufficient for running a simulation.\n";
+        exit(0);
+    }
+
+    
+    
 
     std::cout<<"------>   Simulation will be performed from "<<m_Initial_Step<<" to "<<m_Final_Step<<" steps\n";
 for (int step = m_Initial_Step; step <= m_Final_Step; step++){

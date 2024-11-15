@@ -65,6 +65,7 @@
 // ---- inclusions
 #include "AbstractInclusionPoseIntegrator.h"
 #include "InclusionPoseUpdateByMetropolisAlgorithm.h"
+#include "InclusionPoseUpdateByMetropolisAlgorithmOpenMP.h"
 //--- vector field
 #include "AbstractVectorFieldsRotationMove.h"
 #include "VectorFieldsRotationByMetropolisAlgorithm.h"
@@ -113,6 +114,10 @@
 //--- Inclusion exchange
 #include "AbstractInclusionConversion.h"
 #include "ActiveTwoStateInclusion.h"
+//--- force on ver
+#include "AbstractForceonVertices.h"
+#include "UserDefinedForceonVertices.h"
+
 //--- force from inc to ver
 #include "AbstractForceonVerticesfromInclusions.h"
 #include "AbstractForceonVerticesfromVectorFields.h"
@@ -186,6 +191,7 @@ inline AbstractTotalAreaCoupling        *GetTotalAreaCoupling()                 
 inline AbstractVolumeCoupling           *GetVolumeCoupling()                            {return m_pVolumeCoupling;}
 inline AbstractGlobalCurvature          *GetGlobalCurvature()                           {return m_pCoupleGlobalCurvature;}
 inline AbstractForceonVerticesfromInclusions *GetForceonVerticesfromInclusions()    {return m_pForceonVerticesfromInclusions;}
+inline AbstractForceonVertices              *GetForceonVertices()    {return m_pForceonVertices;}
 inline AbstractForceonVerticesfromVectorFields *GetForceonVerticesfromVectorFields()    {return m_pForceonVerticesfromVectorFields;}
 inline AbstractExternalFieldOnVectorFields *GetExternalFieldOnVectorFields()        {return m_pExternalFieldOnVectorFields;}
 inline AbstractExternalFieldOnInclusions *GetExternalFieldOnInclusions()        {return m_pExternalFieldOnInclusions;}
@@ -228,6 +234,7 @@ private:
     AbstractApplyConstraintBetweenGroups *m_pApplyConstraintBetweenGroups;
     AbstractInclusionConversion* m_pInclusionConversion;
     Restart *m_pRestart;
+    AbstractForceonVertices *m_pForceonVertices;
     AbstractForceonVerticesfromInclusions *m_pForceonVerticesfromInclusions;
     AbstractForceonVerticesfromVectorFields *m_pForceonVerticesfromVectorFields;
 

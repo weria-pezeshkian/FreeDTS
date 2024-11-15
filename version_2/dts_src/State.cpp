@@ -29,6 +29,7 @@ State::State(std::vector<std::string> argument) :
       m_pCoupleGlobalCurvature(new NoGlobalCurvature(m_pVAHCalculator)),
       m_pTotalAreaCoupling(new NoTotalAreaCoupling(m_pVAHCalculator)),
       m_pForceonVerticesfromInclusions(new NoForce),  // Initialize ForceonVerticesfromInclusions
+      m_pForceonVertices(new NoForceonVertices),
       m_pForceonVerticesfromVectorFields(new NoVFForce),  // Initialize ForceonVerticesfromvectorfields
       m_pExternalFieldOnVectorFields(new NoExternalFieldOnVectorFields),  // Initialize ExternalFieldOnVectorFields
       m_pExternalFieldOnInclusions(new NoExternalFieldOnInclusions),  // Initialize ExternalFieldOnVectorFields
@@ -59,7 +60,10 @@ State::State(std::vector<std::string> argument) :
       m_RestartFileName("")  // Set RestartFileName
 { // start of the "class State" constructor
     
-    
+#ifdef _OPENMP
+    m_Total_no_Threads = omp_get_num_procs(),
+    omp_set_num_threads(m_Total_no_Threads),
+#endif
     //---- Initialize integrators
     m_pMesh = &m_Mesh;
     m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithm(this);
@@ -95,6 +99,7 @@ State::~State()
     delete m_pTotalAreaCoupling;
     delete m_pForceonVerticesfromInclusions;
     delete m_pForceonVerticesfromVectorFields;
+    delete m_pForceonVertices;
     delete m_pExternalFieldOnVectorFields;
     delete m_pExternalFieldOnInclusions;
     delete m_pVertexAdhesionToSubstrate;
@@ -362,9 +367,14 @@ while (input >> firstword) {
                 m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithm(this, rate_surf, rate_edge, dr);
             }
            else if (type == EvolveVerticesByMetropolisAlgorithmWithOpenMPType1::GetDefaultReadName()){  // MetropolisAlgorithmWithOpenMPType1
-                double rate_surf,rate_edge,dr;
-                input >> rate_surf >> rate_edge >> dr;
-                m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(this, rate_surf, rate_edge, dr);
+               double rate_surf,rate_edge,dr;
+               input >> rate_surf >> rate_edge >> dr;
+#ifdef _OPENMP
+               m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithmWithOpenMPType1(this, rate_surf, rate_edge, dr);
+#else
+               std::cout<<"---> warnning: OpenMP was not detected, we will use the serial code "<<type<<"\n";
+               m_pVertexPositionIntegrator = new EvolveVerticesByMetropolisAlgorithm(this, rate_surf, rate_edge, dr);
+#endif
             }
             else{
                 std::cout<<"---> error: unknown method for vertex move "<<type<<"\n";
@@ -385,7 +395,14 @@ while (input >> firstword) {
                 else if(type == AlexanderMoveByMetropolisAlgorithmWithOpenMP::GetDefaultReadName()){  // MetropolisAlgorithm
                     double rate;
                     input >> rate;
+#ifdef _OPENMP
                     m_pAlexanderMove = new AlexanderMoveByMetropolisAlgorithmWithOpenMP(this, rate);
+#else
+               std::cout<<"---> warnning: OpenMP was not detected, we will use the serial code "<<type<<"\n";
+                    m_pAlexanderMove = new AlexanderMoveByMetropolisAlgorithm(this, rate);
+#endif
+                    
+                    
                 }
                 else{
                     std::cout<<"---> error: unknown method for Alexander move "<<type<<"\n";
@@ -402,6 +419,16 @@ while (input >> firstword) {
                         double rate_kawa, rate_angle;
                         input >> rate_kawa>> rate_angle;
                         m_pInclusionPoseIntegrator  = new InclusionPoseUpdateByMetropolisAlgorithm(this, rate_kawa, rate_angle);  // Initialize InclusionPoseIntegrator
+                    }
+                    else if(type == InclusionPoseUpdateByMetropolisAlgorithmOpenMP::GetDefaultReadName()){  // MetropolisAlgorithm
+                        double rate_kawa, rate_angle;
+                        input >> rate_kawa>> rate_angle;
+#ifdef _OPENMP
+                        m_pInclusionPoseIntegrator  = new InclusionPoseUpdateByMetropolisAlgorithmOpenMP(this, rate_kawa, rate_angle);  // Initialize InclusionPoseIntegrator
+#else
+               std::cout<<"---> warnning: OpenMP was not detected, we will use the serial code "<<type<<"\n";
+                        m_pInclusionPoseIntegrator  = new InclusionPoseUpdateByMetropolisAlgorithm(this, rate_kawa, rate_angle);  // Initialize InclusionPoseIntegrator
+#endif
                     }
                     else{
                         std::cout<<"---> error: unknown method for Alexander move "<<type<<"\n";
@@ -519,9 +546,14 @@ while (input >> firstword) {
                 m_pDynamicBox = new PositionRescaleFrameTensionCoupling(period, force, direction, this);
             }
             else if (type == PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::GetDefaultReadName()) {
-                    
                 input >> period >> force >> direction;
+#ifdef _OPENMP
                 m_pDynamicBox = new PositionRescaleIsotropicFrameTensionCouplingWithOpenMP(period, force, direction, this);
+#else
+               std::cout<<"---> warnning: OpenMP was not detected, we will use the serial code "<<type<<"\n";
+                m_pDynamicBox = new PositionRescaleFrameTensionCoupling(period, force, direction, this);
+#endif
+                
             }
             else if (type == PositionRescaleAnisotropicFrameTensionCoupling::GetDefaultReadName()) {
                 double force_1 = 0;
@@ -794,6 +826,22 @@ while (input >> firstword) {
                 return false;
             }
         }
+    //---- force from vector fields on the vertices
+        else if(firstword == AbstractForceonVertices::GetBaseDefaultReadName()) {
+                input >> str >> type;
+                getline(input,rest);
+                if(type == UserDefinedForceonVertices::GetDefaultReadName()){  // Constant_NematicForce
+                    m_pForceonVertices = new UserDefinedForceonVertices(this, rest);
+                }
+                else if(type == NoForceonVertices::GetDefaultReadName()){
+                    
+                }
+                else {
+                    std::cout<<" unknown Force on vertices type has unknown  method "<<std::endl;
+                    m_NumberOfErrors++;
+                    return false;
+                }
+        }
         else if(firstword == "TimeSeriesData_Period") { // TimeSeriesData
             int period;
             input>>str>>period;
@@ -1058,7 +1106,8 @@ bool State::Initialize(){
         m_pVectorFieldsRotationIntegrator->Initialize();
 //----> boundry of the simulations
         m_pBoundary->Initialize();
-
+        m_pForceonVertices->Initialize();
+    
 //-----> box change
         m_pDynamicBox->Initialize();
     

@@ -496,3 +496,129 @@ double MESH::SquareDistanceBetweenTwoVertices(vertex *p_v1, vertex* p_v2, Vec3D 
     return dx * dx + dy * dy + dz * dz;
     
 }
+bool MESH::CheckMesh(double min_l, double max_l, double min_angle, Voxelization<vertex>  *pVoxelization){
+        
+    // this is only the  edges
+    for (std::vector<links *>::const_iterator it = m_pActiveL.begin() ; it != m_pActiveL.end(); ++it){
+
+        vertex *p_v1 = (*it)->GetV1();
+        vertex *p_v2 = (*it)->GetV2();
+        double dist2 = p_v1->SquareDistanceFromAVertex(p_v2);
+        if(dist2 < min_l || dist2 > max_l){
+            
+            std::cout<<"---> error: bad edge length: length of an edge is "<<dist2<<"\n";
+            return false;
+        }
+    }
+   
+    // all vertices should also have a distance larger then sqrt(m_MinLength2)
+
+   
+    //--- checking the distance between each pair
+    Voxel<vertex>  ****voxels = pVoxelization->GetAllVoxel();
+    int Nx = pVoxelization->GetXVoxelNumber();
+    int Ny = pVoxelization->GetYVoxelNumber();
+    int Nz = pVoxelization->GetZVoxelNumber();
+
+    for (int i = 0; i < Nx; ++i) {
+    for (int j = 0; j < Ny; ++j) {
+    for (int k = 0; k < Nz; ++k) {
+        
+        std::vector<vertex*> voxel_ver = (voxels[i][j][k])->GetContentObjects();
+            
+        //--- check distances within the same voxel
+        for (std::vector<vertex*>::iterator it1 = voxel_ver.begin(); it1 != voxel_ver.end(); ++it1) {
+            for (std::vector<vertex*>::iterator it2 = it1 + 1; it2 != voxel_ver.end(); ++it2) {
+                    double l2 = SquareDistanceBetweenTwoVertices(*it1, *it2);
+                    if (l2 < min_l) {
+                        return false;
+                    }
+                }
+        }
+        // check distances of vertex from neighbouring voxels
+            for (int n = 0; n < 2; ++n)
+            for (int m = 0; m < 2; ++m)
+            for (int s = 0; s < 2; ++s)
+              if(n != 0 || m != 0 || s!=0) {
+                    std::vector<vertex*> voxel_ver2 = (voxels[i][j][k])->GetANeighbourCell(n,m,s)->GetContentObjects();
+
+                    for (std::vector<vertex *>::iterator it1 = voxel_ver.begin() ; it1 != voxel_ver.end(); ++it1) {
+                        for (std::vector<vertex *>::iterator it2 = voxel_ver2.begin() ; it2 != voxel_ver2.end(); ++it2) {
+                            if(it1 != it2){
+                                double l2 = SquareDistanceBetweenTwoVertices(*it1, *it2);
+                                if (l2 < min_angle) {
+                                    return false;
+                                }
+                        }//  if(it1 != it2){
+                    }
+                }
+            }// for (int s = 0; s < 2; ++s) {
+    }
+    }
+    }
+
+
+   
+    for (std::vector<links*>::iterator it = m_pHL.begin(); it != m_pHL.end(); ++it) {
+        // For each link, check if the face angle condition is satisfied using CheckFaceAngleOfOneLink function.
+        // If any link does not satisfy the condition, return false.
+        if (!(*it)->CheckFaceAngleWithMirrorFace(min_angle)) {
+            return false;
+        }
+    }
+
+    
+    return true;
+}
+double MESH::SquareDistanceBetweenTwoVertices(vertex * v1,vertex * v2){
+    /**
+     * Calculates the squared stretched distance between two vertices.
+     *
+     * This function computes the squared distance between two vertices (v1 and v2)
+     * after applying a stretching factor along each axis (lx, ly, lz). The stretching
+     * factors allow for scaling the distance calculation to account for non-uniform
+     * scaling of the simulation box dimensions. The function also ensures that the
+     * distance respects periodic boundary conditions, wrapping around the box if
+     * necessary.
+     *
+     * @param v1 Pointer to the first vertex.
+     * @param v2 Pointer to the second vertex.
+     * @return The squared distance between the two vertices after scaling and
+     *         considering periodic boundary conditions.
+     */
+    // Calculate the initial distance components between the two vertices
+    double dx = v2->GetVXPos() - v1->GetVXPos();
+    double dy = v2->GetVYPos() - v1->GetVYPos();
+    double dz = v2->GetVZPos() - v1->GetVZPos();
+    
+
+
+    // Calculate the dimensions of the scaled simulation box
+    double Lx = (*m_pBox)(0);
+    double Ly = (*m_pBox)(1);
+    double Lz = (*m_pBox)(2);
+
+    // Apply periodic boundary conditions for the x-axis
+    if(fabs(dx) > Lx / 2.0) {
+        if(dx < 0)
+            dx = Lx + dx;
+        else
+            dx = dx - Lx;
+    }
+    // Apply periodic boundary conditions for the y-axis
+    if(fabs(dy) > Ly / 2.0) {
+        if(dy < 0)
+            dy = Ly + dy;
+        else
+            dy = dy - Ly;
+    }
+    // Apply periodic boundary conditions for the z-axis
+    if(fabs(dz) > Lz / 2.0) {
+        if(dz < 0)
+            dz = Lz + dz;
+        else
+            dz = dz - Lz;
+    }
+    // Return the squared distance after scaling and applying periodic boundary conditions
+    return dx * dx + dy * dy + dz * dz;
+}
