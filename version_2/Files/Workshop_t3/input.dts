@@ -1,0 +1,26 @@
+Integrator_Type          = MC_Simulation
+Set_Steps                = 1 100000
+Temperature              = 1 0
+Kappa                    = 15 0 0
+VertexArea               = 0 0 0 0
+VertexPositionIntegrator = MetropolisAlgorithmOpenMP 1 1 0.05
+AlexanderMove            = MetropolisAlgorithmOpenMP 0.3
+InclusionPoseIntegrator = MetropolisAlgorithmOpenMP   1 1 
+Dynamic_Box              =  IsotropicFrameTensionOpenMP  1  0  XY
+TotalAreaCoupling        = HarmonicPotential 0 0.34
+;output managment
+VisualizationFormat      = VTUFileFormat VTU_F 1000
+NonbinaryTrajectory      = TSI TrajTSI 1000
+TimeSeriesData_Period    = 100
+Restart_Period           = 1000
+INCLUSION
+Define 2 Inclusions
+SRotation Type   K   KG  KP  KL  C0  C0P C0L
+0      Pro1   15  0   0   0   0.5  0   0
+0      Pro2   20  0   0   0   -0.4  0   0
+GenerateInclusions
+Selection_Type Random
+TypeID     1     2         
+Density    0.15   0     
+Inclusion-Inclusion-Int
+1    1       1  0   2     0
