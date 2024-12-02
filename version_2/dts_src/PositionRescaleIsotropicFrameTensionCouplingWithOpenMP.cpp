@@ -72,7 +72,9 @@ bool PositionRescaleIsotropicFrameTensionCouplingWithOpenMP::ChangeBoxSize(int s
     double voxel_lz = m_pState->GetVoxelization()->GetZSideVoxel();
     if(voxel_lx < 1.05 || voxel_ly < 1.05 || voxel_lz < 1.05) {
         m_pState->GetVoxelization()->UpdateVoxelSize(1.2, 1.2, 1.2);
-        m_pState->GetVoxelization()->VoxelizeOpenMP(m_pActiveV);
+        m_pState->GetVoxelization()->Voxelize(m_pActiveV);
+       // m_pState->GetVoxelization()->VoxelizeOpenMP(m_pActiveV);
+
     }
 //---> find the size of box change; isotropic method (here all the other methods can be performed)
     double dx = 1 - 2 * (m_pState->GetRandomNumberGenerator()->UniformRNG(1.0));

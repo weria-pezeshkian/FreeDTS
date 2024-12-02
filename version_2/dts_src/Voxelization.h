@@ -173,7 +173,7 @@ bool Voxelize(std::vector<Type *> all_pObjects) {
             double x = (*it)->GetXPos(); // Retrieve X position of each object
             double y = (*it)->GetYPos(); // Retrieve Y position of each object
             double z = (*it)->GetZPos(); // Retrieve Z position of each object
-            // Process or allocate objects to voxels based on their Z position
+            // Process or allocate objects to voxels based on their XYZ position
             int nx = (*it)->GetXPos()/Lx;
             int ny = (*it)->GetYPos()/Ly;
             int nz = (*it)->GetZPos()/Lz;

@@ -162,6 +162,10 @@ bool CurvatureByShapeOperatorType1::UpdateSurfVertexCurvature(vertex * pvertex){
 
 
     double size=sqrt(q*q+(c1-p)*(c1-p));                   // The Eigenvectors can be calculated using this equation LSV*R=c1*R
+    if(size == 0.0){
+        size = 1;
+        q = 1;
+    }
     EigenvMat(0,0)=q/size;                                  // only one of them needs to be calculated, one is normal vector and the other is perpendicular to first one
     EigenvMat(1,0)=(c1-p)/size;
     EigenvMat(0,1)=-EigenvMat(1,0);
@@ -252,12 +256,12 @@ Vec3D CurvatureByShapeOperatorType1::Calculate_Vertex_Normal(vertex *pvertex, do
         return false;
     }
     double normalsize=Normal.norm();
-    if(normalsize==0){
+    if(normalsize == 0){
         
         *(m_pState->GetTimeSeriesLog())<<"---> error: vertex, with id "<<pvertex->GetVID() <<" has zero normal \n";
         return false;
     }
-    Normal=Normal*(1.0/normalsize);
+    Normal = Normal*(1.0/normalsize);
     
     return Normal;
 }

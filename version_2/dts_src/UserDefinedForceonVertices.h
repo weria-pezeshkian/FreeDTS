@@ -23,8 +23,13 @@ public:
 private:
     Vec3D CalculateForce(vertex *pv);
     std::string m_Inputs;
-    std::vector<vertex*> m_pallV;
     State *m_pState;
+    vertex *m_pV1;
+    vertex *m_pV2;
+    vertex *m_pV3;
+    double m_K;
+
+    std::vector<vertex*> m_pallV;
 
 };
 

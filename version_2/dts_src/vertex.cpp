@@ -443,9 +443,12 @@ double vertex::SquareDistanceFromAVertex(vertex* pv2) {
     return dx * dx + dy * dy + dz * dz;
 }
 double vertex::SquareDistanceOfAVertexFromAPoint(double X, double Y, double Z, vertex* pv2) {
-    double dx = pv2->GetVXPos() - X;
-    double dy = pv2->GetVYPos() - Y;
-    double dz = pv2->GetVZPos() - Z;
+    
+    Vec3D Pos = pv2->GetPos();
+    
+    double dx = Pos(0) - X;
+    double dy = Pos(1) - Y;
+    double dz = Pos(2) - Z;
 
     double boxHalfX = (*m_pBox)(0) / 2.0;
     double boxHalfY = (*m_pBox)(1) / 2.0;
