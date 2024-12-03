@@ -151,8 +151,6 @@ bool CurvatureByShapeOperatorType1::UpdateSurfVertexCurvature(vertex * pvertex){
     else{
         c1=1;
         c2=1;
-        std::cout<<"WARNING: faild to find curvature on vertex "<<pvertex->GetVID()<<"  because delta is "<<delta<<"  c1 and c2 are set to 100 \n";
-        std::cout<<" if you face this too much, you should stop the job and .... \n";
     }
 
     Tensor2 EigenvMat('O');
