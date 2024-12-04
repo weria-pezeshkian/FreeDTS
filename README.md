@@ -12,6 +12,10 @@ We are currently developing Version 2. If you are a new user, we recommend using
 [Tutorials version 1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-with-version-1)  \
 [Tutorials version 2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Workshop-2024) 
 
+## version 2.0
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14278901.svg)](https://doi.org/10.5281/zenodo.14278901)
+
+
 ## version 1.0
 [![DOI:10.5281/zenodo.10397542](https://zenodo.org/badge/DOI/10.5281/zenodo.10397542.svg)](https://doi.org/10.5281/zenodo.10397542)\
 See also:
