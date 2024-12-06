@@ -13,7 +13,7 @@ We are currently working on Version 2.1. For new users, we recommend starting wi
 [Tutorials version 2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Workshop-2024) 
 
 ## version 2.0
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14278901.svg)](https://doi.org/10.5281/zenodo.14278901)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14278901.svg)](https://zenodo.org/records/14278901)
 
 
 ## version 1.0
