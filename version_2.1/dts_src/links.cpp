@@ -1,5 +1,5 @@
 
-
+#include <limits>
 #include "links.h"
 #include "vertex.h"
 
@@ -688,6 +688,37 @@ bool links::CheckFaceAngleWithNextEdgeFace(double &minangle){
     // Calculate and return the dot product of the normal vectors
     return true;
 }
+double links::Cal_CotOppositeAngle() {
+    /**
+     * @brief Computes the cotangent of the interior angle opposite to an edge.
+     *
+     * This function calculates the cotangent of the angle between two vectors
+     * without explicit normalization, making it more efficient.
+     *
+     * @return Cotangent of the angle.
+     */
+
+    // Compute vectors from V3 to V1 and V3 to V2
+    Vec3D X31 = m_V1->GetPos() - m_V3->GetPos();
+    Vec3D X32 = m_V2->GetPos() - m_V3->GetPos();
+
+    // Compute squared magnitudes (avoiding unnecessary sqrt calls)
+    double S1 = Vec3D::dot(X31, X31);  // ||X31||^2
+    double S2 = Vec3D::dot(X32, X32);  // ||X32||^2
+    double S21 = Vec3D::dot(X31, X32); // X31 · X32
+
+    // Compute the denominator for the cotangent formula
+    double denom = S1 * S2 - S21 * S21;
+
+    // Avoid precision errors and division by zero
+    if (denom <= 1e-12) {
+        return std::numeric_limits<double>::max();  // Return a large value for near-zero sine cases
+    }
+
+    // Compute and return cotangent as cos(theta) / sin(theta)
+    return S21 / sqrt(denom);
+}
+
 
 
 

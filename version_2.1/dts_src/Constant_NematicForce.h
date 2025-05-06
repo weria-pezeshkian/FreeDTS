@@ -20,7 +20,12 @@ public:
     Vec3D Inclusion_Force(vertex *pv2);
 
 private:
-    Vec3D ActiveNematicForce_1(vertex *pv2, vertex *pv1);
+    static Vec3D ActiveNematicForce_1(vertex *pv2, vertex *pv1);
+    static Vec3D ActiveNematicForce_2(vertex *pv2, vertex *pv1);
+    static Vec3D ActiveNematicForce_3(vertex *pv2, vertex *pv1);
+
+    Vec3D (*m_ForceFunction)(vertex *, vertex *);
+
     double m_F0;
     double m_ActiveEnergy;
 

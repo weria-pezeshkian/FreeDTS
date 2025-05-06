@@ -44,6 +44,9 @@ bool InclusionPoseUpdateByMetropolisAlgorithm::EvolveOneStep(int step){
       int m = m_pState->GetRandomNumberGenerator()->IntRNG(linklist.size());
       links *d_link = linklist[m];
       
+      if( m_FreezeTypeName == p_inc->GetInclusionType()->ITName){
+          continue;
+      }
       if(KawasakiMove(p_inc,d_link, thermal)){
           m_AcceptedMoves++;
       }
@@ -95,7 +98,9 @@ bool InclusionPoseUpdateByMetropolisAlgorithm::KawasakiMove(inclusion* p_inc, li
    if (has_inclusion && p_inc->GetInclusionType() == tver->GetInclusion()->GetInclusionType()) {
         return false;
     }
-
+    if( has_inclusion && m_FreezeTypeName == tver->GetInclusion()->GetInclusionType()->ITName){
+        return false;
+    }
     double en_1 = hver->GetEnergy();
     double en_2 = tver->GetEnergy();
     old_energy = en_1 + en_2;

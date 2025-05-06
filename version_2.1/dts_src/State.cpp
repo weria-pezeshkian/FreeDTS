@@ -39,6 +39,9 @@ State::State(std::vector<std::string> argument) :
       m_pApplyConstraintBetweenGroups(new NoConstraint),  // Initialize ApplyConstraintBetweenGroups
       m_pBoundary(new PBCBoundary),  // Initialize Boundary
       m_pBondedPotentialBetweenVertices(new EmptyBonds),
+
+//---- Initialize local stretching
+      m_pAbstractLocalStretching(new NoLocalStretching),
       //---- Initialize supplementary integrators
       m_pDynamicBox(new NoBoxChange),  // Initialize DynamicBox
       m_pDynamicTopology(new ConstantTopology),  // Initialize DynamicTopology
@@ -120,6 +123,7 @@ State::~State()
     delete m_pSimulation;
     delete m_pVoxelization;
     delete m_pNonequilibriumCommands;
+    delete m_pAbstractLocalStretching;
 }
 bool State::ExploreArguments(std::vector<std::string> &argument){
     /*
@@ -162,6 +166,7 @@ bool State::ExploreArguments(std::vector<std::string> &argument){
     const std::string INDEX_FLAG       = "-ndx";
     const std::string DEFOUT_FLAG      = "-defout";
     const std::string THREAD_FLAG      = "-nt";
+    const std::string ANALYSIS_FLAG    = "-analysis";
 
     for (size_t i=1;i<argument.size();i=i+2)
     {
@@ -194,6 +199,9 @@ bool State::ExploreArguments(std::vector<std::string> &argument){
         else if(flag == SEED_FLAG){
             
             m_RandomNumberGenerator = new RNG(Nfunction::String_to_Int(argument[i+1]));
+        }
+        else if(flag == ANALYSIS_FLAG){
+            m_pSimulation = new Analysis(this,argument[i+1] );
         }
         else if(flag == RESTART_FLAG){
             
@@ -301,6 +309,10 @@ while (input >> firstword) {
             input >> str >> type;
             if(type == MC_Simulation::GetDefaultReadName()){
                 m_pSimulation = new MC_Simulation(this);
+            }
+            else if(type == Analysis::GetDefaultReadName()){
+                input >> str;
+                m_pSimulation = new Analysis(this, str);
             }
             else {
                 std::cout<<AbstractSimulation::GetErrorMessage(type)<<std::endl;
@@ -467,6 +479,15 @@ while (input >> firstword) {
                         return false;
                     }
             }
+// --------LocalStretching
+            else if(firstword == AbstractLocalStretching::GetBaseDefaultReadName()) {
+                input>>str>>type;
+                if(type == AnisotropicStretchingByNematicField::GetDefaultReadName()){  // MetropolisAlgorithm
+                    double kp,kn;
+                    input >> kp >> kn;
+                    m_pAbstractLocalStretching = new AnisotropicStretchingByNematicField(kp,kn);
+                }
+            }
 //---- Volume_Constraint data
         else if(firstword == AbstractVolumeCoupling::GetBaseDefaultReadName())   { // Volume_Constraint
             input >> str >> type;
@@ -529,8 +550,13 @@ while (input >> firstword) {
                     getline(input,rest);
                     m_NonbondedInteractionBetweenVertices = new PolarInteractionBetweenEdgesVertices(this, rest);
                 }
+                else if(type == InteractionBetweenInclusionsIn3D::GetDefaultReadName()) { //
+                    
+                    getline(input,rest);
+                    m_NonbondedInteractionBetweenVertices = new InteractionBetweenInclusionsIn3D(this, rest);
+                }
                 else {
-                    std::cout<<AbstractNonbondedInteractionBetweenVertices::GetErrorMessage(type)<<"\n";
+                    std::cerr<<AbstractNonbondedInteractionBetweenVertices::GetErrorMessage(type)<<"\n";
                     m_NumberOfErrors++;
                     return false;
                 }
@@ -614,6 +640,17 @@ while (input >> firstword) {
                 double a0 = 0;
                 input >> period >> k >> a0  >> direction;
                 m_pDynamicBox = new BoxSizeCouplingToHarmonicPotential(period, k, a0, direction, this);
+            }
+            else if (type == BoxSizeCouplingToHarmonicPotentialAnisotropic::GetDefaultReadName()) {
+                double kx = 0;
+                double ky = 0;
+                double kz = 0;
+                double a0x = 0;
+                double a0y = 0;
+                double a0z = 0;
+
+                input >> period >> kx >> ky >> kz >> a0x >> a0y >> a0z >> direction;
+                m_pDynamicBox = new BoxSizeCouplingToHarmonicPotentialAnisotropic(period, kx, ky, kz, a0x , a0y, a0z, direction, this);
             }
             else if(type == NoBoxChange::GetDefaultReadName()) {
                     // has been assigned above
@@ -1182,6 +1219,8 @@ bool State::Initialize(){
     m_pDynamicTopology->Initialize();
     m_pOpenEdgeEvolution->Initialize();
     
+    m_pAbstractLocalStretching->Initialize();
+
     
     m_pVAHCalculator->Initialize(this);
     m_pTotalAreaCoupling->Initialize(this);

@@ -48,6 +48,8 @@ private:
     double F2(vertex *v1, vertex *v2,std::vector<double>);
     double F11(vertex *v1, vertex *v2,std::vector<double>);
     double InteractionFunction(double N2, double A, double B, double theta);
+    double InteractionFunctionFull(double N2, double A, double B, double theta, links*);
+    double InteractionFive(double N2, double A, double B, double C,  links*);
     double Filament_int(double A, double B, double C, vertex* p_v1, vertex* p_v2);
 
 private:

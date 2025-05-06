@@ -103,6 +103,7 @@ bool WritevtuFiles::WriteAFrame(int step){
     }
     int file_index = step/m_Period;
     std::string Filename = "./"+m_FolderName+"/conf"+Nfunction::Int_to_String(file_index)+".vtu";
+    
     std::ofstream Output;
     Output.open(Filename.c_str());
     
@@ -184,6 +185,11 @@ bool WritevtuFiles::WriteAFrame(int step){
      WriteInclusion("dir", all_ver, &Output);
     
     WriteVectorFields(all_ver, &Output);
+    
+    for (int n=0; n<m_AllVectors.size();n++){
+        WriteVector(m_AllVectorNames[n],m_AllVectors[n], &Output);
+    }
+
 
     Output<<"      </PointData>"<<"\n";
     Output<<"      <Points>"<<"\n";
@@ -233,6 +239,40 @@ bool WritevtuFiles::WriteAFrame(int step){
     Output.flush();
     Output.close();
 
+    return true;
+}
+bool WritevtuFiles::WriteVector(const std::string &name, const std::vector<Vec3D >  &vecs, std::ofstream *Output){
+
+    
+    (*Output) << std::fixed;
+    (*Output) << std::setprecision(Precision);
+
+        // Write the DataArray header to the output file
+        *Output << "        <DataArray type=\"Float32\" Name=\"" << name
+                << "\" NumberOfComponents=\"3\" Format=\"ascii\">\n";
+
+        // Loop through all vertices and write their vector field data
+        for (std::vector<Vec3D>::const_iterator itr = vecs.begin(); itr != vecs.end(); ++itr) {
+            *Output << "  " << (*itr)(0) << "      " << (*itr)(1) << "      " << (*itr)(2) << "\n";
+        }
+
+        // Close the DataArray element
+        *Output << "        </DataArray>\n";
+
+
+    return true;
+    
+}
+bool WritevtuFiles::AddVector(const std::string& name, const std::vector<Vec3D >  &vecs){
+    m_AllVectors.push_back(vecs);
+    m_AllVectorNames.push_back(name);
+    
+    return true;
+}
+bool WritevtuFiles::ClearVector(){
+    m_AllVectors.clear();
+    m_AllVectorNames.clear();
+    
     return true;
 }
 std::string WritevtuFiles::CurrentState(){

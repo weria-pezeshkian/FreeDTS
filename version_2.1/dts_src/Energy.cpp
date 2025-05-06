@@ -24,6 +24,8 @@ double Energy::SingleVertexEnergy(vertex *p_vertex) {
     Energy += m_pState->GetExternalFieldOnInclusions()->GetCouplingEnergy(p_vertex);
     Energy += m_pState->GetVertexAdhesionToSubstrate()->GetCouplingEnergy(p_vertex);
 
+    Energy += m_pState->GetAbstractLocalStretching()->Energy(p_vertex);
+
     if(p_vertex->m_VertexType == 0) {
     
         Energy += SurfVertexBendingAndStretchingEnergy(p_vertex);
@@ -212,6 +214,17 @@ double Energy::TwoInclusionsInteractionEnergy(links * p_edge) {
 
              break;
          }
+        case 4: {
+            double theta = (ff[2] != 0) ? Geo_Theta(p_v1, p_v2) : 0.0;
+            e_int = InteractionFunctionFull(ff[0], ff[1], ff[2], theta, p_edge);
+
+            break;
+        }
+        case 5: {
+            e_int = InteractionFive(ff[0], ff[1], ff[2],ff[3],  p_edge);
+
+            break;
+        }
         case 3:{
               e_int = Filament_int(ff[0], ff[1], ff[2],p_v1, p_v2);
              break;
@@ -257,6 +270,69 @@ double Energy::InteractionFunction(double N, double A, double B, double theta) {
         e = -A + B * e;
 
     return e;
+}
+double Energy::InteractionFunctionFull(double N, double A, double B, double theta, links* pl) {
+//---- to have the metric in
+    double scale =  pl->Cal_CotOppositeAngle();
+    if(pl->GetMirrorFlag()){
+        scale += pl->GetMirrorLink()->Cal_CotOppositeAngle();
+        scale  = scale/2;
+    }
+    
+    double e =  -A + B * cos( double(N) * theta );
+
+    return scale*e;
+}
+double Energy::InteractionFive(double N, double A, double B, double C,  links* p_link){
+   
+    vertex *v1 = p_link->GetV1();
+    vertex *v2 = p_link->GetV2();
+
+    Vec3D X1 = v1->GetPos();
+    Vec3D X2 = v2->GetPos();
+    Vec3D geodesic_dir=(X2-X1);
+
+    for (int i=0;i<3;i++)
+    {
+        if(fabs(geodesic_dir(i))>  m_Box(i)/2)
+        {
+            if(geodesic_dir(i)<0)
+                geodesic_dir(i) = geodesic_dir(i) + m_Box(i);
+            else if(geodesic_dir(i)>0)
+                geodesic_dir(i) = geodesic_dir(i) - m_Box(i);
+        }
+    }
+    double edge_size = geodesic_dir.norm();
+    
+    Vec3D y1=(v1->GetG2LTransferMatrix())*geodesic_dir;
+    y1(2)=0;
+    y1.normalize();
+    Vec3D y2=(v2->GetG2LTransferMatrix())*geodesic_dir;
+    y2(2)=0;
+    y2.normalize();
+    Vec3D n(0,0,1);
+    
+    Vec3D d1 = (v1->GetInclusion())->GetLDirection();
+    Vec3D d2 = (v2->GetInclusion())->GetLDirection();
+    double cos1 = y1.dot(y1,d1);
+    double sin1 = n.dot(n*y1,d1);
+    double cos2 = y1.dot(y2,d2);
+    double sin2 = n.dot(n*y2,d2);
+
+    // Compute theta
+    double S_an = sin1 * sin2 + cos1 * cos2;
+    double theta = acos(S_an);
+
+    
+    double e = cos( double(N) * theta );
+
+    double cos2T_1 = cos1*cos1 + cos2*cos2 - 1; //2cos(theta1)^2-1+2cos(theta2)^2 -1, with below
+    cos2T_1 = 2 * cos2T_1;
+    
+    e = -A + B * e + C * cos2T_1/edge_size;
+
+return e;
+    
 }
 double Energy::Filament_int(double A, double B, double C, vertex* p_v1, vertex* p_v2) {
     

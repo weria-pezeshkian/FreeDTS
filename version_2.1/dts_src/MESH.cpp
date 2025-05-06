@@ -17,6 +17,31 @@ MESH::MESH() : m_MeshCrossedPBC(false) {
 MESH::~MESH() {
     
 }
+bool MESH::Clear_Mesh(){
+    
+    m_pActiveV.clear();
+    m_pSurfV.clear();
+    m_pEdgeV.clear();
+    m_pActiveL.clear();
+    m_pHL.clear();
+    m_pMHL.clear();
+    m_pEdgeL.clear();
+    m_pActiveT.clear();
+    m_pInclusion.clear();
+    m_pGhostT.clear();
+    m_pGhostL.clear();
+    m_pGhostV.clear();
+    m_Vertex.clear();
+    m_Triangle.clear();
+    m_Links.clear();
+    m_Inclusion.clear();
+    m_GhostT.clear();
+    m_GhostL.clear();
+    m_GhostV.clear();
+
+    
+    return true;
+}
 void MESH::RemoveFromLinkList(links* z, std::vector<links*> &vect){
     vect.erase(std::remove(vect.begin(), vect.end(), z), vect.end());
     return;
@@ -136,9 +161,9 @@ bool MESH::GenerateMesh(MeshBluePrint meshblueprint)
     for (std::vector<Inclusion_Map>::iterator it = (meshblueprint.binclusion).begin() ; it != (meshblueprint.binclusion).end(); ++it)
     {
         
-        if(m_Vertex.size()<it->vid+1 && it->tid > m_InclusionType.size()) {
+        if(m_Vertex.size()<it->vid+1 && it->tid > m_InclusionType.size() && it->tid < 1 ) {
             
-            std::cout<<"----> Error: Inclusion vertex id or type id is out of range "<<std::endl;
+            std::cout<<"----> Error: Inclusion vertex id or type id is out of range. Type "<<it->tid<<"  v-id "<<it->vid<<std::endl;
             exit(0);
         }
         inclusion Tinc(it->id, &(m_InclusionType[it->tid]));

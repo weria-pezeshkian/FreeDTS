@@ -15,6 +15,9 @@ ConstantExternalField::ConstantExternalField(double k, double x, double y, doubl
 
     // Assign the normalized vector as the field direction
     m_FieldDirection = tem;
+    
+    
+    m_CouplingFunction = CouplingType_1;
 }
 ConstantExternalField::~ConstantExternalField()
 {
@@ -34,12 +37,16 @@ double ConstantExternalField::GetCouplingEnergy(vertex *pvertex) {
     // Transform the local direction to global direction using the transfer matrix
     Vec3D GD = pvertex->GetL2GTransferMatrix() * LD;
 
-    // Calculate the cosine of the angle between the global direction and the field direction
-    double Cangle = GD.dot(GD,m_FieldDirection);
 
     // Calculate and return the coupling energy
     // Note: The negative sign indicates that the field tends to minimize the angle with the field direction
-    return -m_FieldStrength * Cangle * Cangle;
+    return -m_FieldStrength * m_CouplingFunction(Vec3D::dot(GD , m_FieldDirection));
+}
+double ConstantExternalField::CouplingType_1(const double &Cos){
+    return Cos*Cos;
+}
+double ConstantExternalField::CouplingType_2(const double &Cos){
+    return Cos;
 }
 std::string ConstantExternalField::CurrentState(){
     

@@ -23,6 +23,11 @@ public:
 private:
     Vec3D m_FieldDirection;
     double m_FieldStrength;
+    
+    static double CouplingType_1(const double &angle );
+    static double CouplingType_2(const double &angle );
+
+    double (*m_CouplingFunction)(const double &angle);
 
 };
 

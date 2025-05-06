@@ -62,6 +62,7 @@ public:
 
 
 public:
+    bool Clear_Mesh();
     void RemoveFromLinkList(links* z, std::vector<links*> &vect);
     void RemoveFromTriangleList(triangle* z, std::vector<triangle*> &vect);
     void RemoveFromVertexList(vertex* z, std::vector<vertex*> &vect);

@@ -103,7 +103,7 @@ public:
 
     void ConstantMesh_Copy();
     void ReverseConstantMesh_Copy();
-    
+    double Cal_CotOppositeAngle();
     // this are old value of the key variables we need this for the copying
 private:
     triangle *m_OldT1;     //

@@ -93,6 +93,7 @@
 #include "PositionRescaleIsotropicFrameTensionCouplingWithOpenMP.h"
 #include "PositionRescaleAnisotropicFrameTensionCoupling.h"
 #include "BoxSizeCouplingToHarmonicPotential.h"
+#include "BoxSizeCouplingToHarmonicPotentialAnisotropic.h"
 //-- dynamic topology
 #include "AbstractDynamicTopology.h"
 #include "Three_Edge_Scission.h"
@@ -134,6 +135,9 @@
 #include "ConstantExternalField.h"
 #include "ConstantExternalFieldOnOneInclusionType.h"
 #include "ConstantExternalFieldOnVectorFields.h"
+//--- Local Stretching
+#include "AbstractLocalStretching.h"
+#include "AnisotropicStretchingByNematicField.h"
 //--- interaction with Substrate
 #include "AbstractVertexAdhesionToSubstrate.h"
 #include "SphericalVertexSubstrate.h"
@@ -145,6 +149,7 @@
 //--- simulation
 #include "AbstractSimulation.h"
 #include "MC_Simulation.h"
+#include "Analysis.h"
 //--- accessory objects
 #include "RNG.h"
 #include "VAHGlobalMeshProperties.h"
@@ -154,6 +159,7 @@
 //---  nonbonded energies
 #include "AbstractNonbondedInteractionBetweenVertices.h"
 #include "PolarInteractionBetweenEdgesVertices.h"
+#include "InteractionBetweenInclusionsIn3D.h"
 
 
 struct ParallelReplicaData {  // data structure for turning on and off certain moves
@@ -199,6 +205,7 @@ inline AbstractApplyConstraintBetweenGroups *GetApplyConstraintBetweenGroups()  
 //---- nonbonded interactions
 inline AbstractNonbondedInteractionBetweenVertices *GetNonbondedInteractionBetweenVertices()                    {return m_NonbondedInteractionBetweenVertices;}
 
+inline AbstractLocalStretching *GetAbstractLocalStretching()                    {return m_pAbstractLocalStretching;}
 //---- algorithm mangments
 inline AbstractTotalAreaCoupling        *GetTotalAreaCoupling()                         {return m_pTotalAreaCoupling;}
 inline AbstractVolumeCoupling           *GetVolumeCoupling()                            {return m_pVolumeCoupling;}
@@ -234,6 +241,10 @@ inline std::vector <std::string> GetCommandLineArgument()                       
 inline std::string               GetRunTag()                                    {return m_GeneralOutputFilename;}
 inline int                       GetThreads_Number()                                {return m_Total_no_Threads;}
 inline ParallelReplicaData       GetParallelReplicaData()                           {return m_Parallel_Replica;}
+    
+inline std::string       GetInputFileName()                           {return m_InputFileName;}
+
+    
 std::string CurrentState();
 
 static void HelpMessage();              // writes a help message
@@ -263,6 +274,8 @@ private:
     AbstractVertexPositionIntegrator    *m_pVertexPositionIntegrator;
     AbstractInclusionPoseIntegrator     *m_pInclusionPoseIntegrator;
     AbstractVectorFieldsRotationMove    *m_pVectorFieldsRotationIntegrator;
+    
+    AbstractLocalStretching             *m_pAbstractLocalStretching;
 //--- IO file managment
     TimeSeriesDataOutput            *m_pTimeSeriesDataOutput;
     TimeSeriesLogInformation        *m_pTimeSeriesLogInformation;

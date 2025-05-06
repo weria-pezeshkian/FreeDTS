@@ -26,20 +26,27 @@ public:
     inline  std::string GetDerivedDefaultReadName()  {return "VTUFileFormat";}
      inline  static std::string GetDefaultReadName()   {return "VTUFileFormat";}
     std::string CurrentState();
+    bool AddVector(const std::string &name, const std::vector<Vec3D > & vecs);
+    bool ClearVector();
 
     
 private:
     void WriteInclusion(std::string id, const std::vector<vertex *>  &all_ver, std::ofstream *Output);
     bool WriteVectorFields(const std::vector<vertex *>  &all_ver, std::ofstream *Output);
+    bool WriteVector(const std::string &name, const std::vector<Vec3D >  &vecs, std::ofstream *Output);
 
 
 
 private:
 
-  //  Vec3D *m_pBox;
     Vec3D &m_Box;
     State* m_pState;
     std::string m_FolderName;
+    
+    std::vector<std::vector<Vec3D> > m_AllVectors;
+    std::vector<std::string>  m_AllVectorNames;
+
+    
 
 };
 #endif

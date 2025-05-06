@@ -238,6 +238,9 @@ bool EvolveVerticesByMetropolisAlgorithm::EvolveOneVertex(int step, vertex *pver
     //--> sum of all the energies
     double tot_diff_energy = diff_energy + dE_Cgroup + dE_force_on_vertex + dE_force_from_inc + dE_force_from_vector_fields + dE_volume + dE_t_area + dE_g_curv + bond_energy + dE_nonbonded;
     double U = m_Beta * tot_diff_energy - m_DBeta;
+    
+    //std::cout<<diff_energy<<"  "<<dE_force_from_inc<<"\n";
+
     //---> accept or reject the move
     if(U <= 0 || exp(-U) > temp ) {
         // move is accepted

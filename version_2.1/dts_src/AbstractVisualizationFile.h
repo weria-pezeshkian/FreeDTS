@@ -18,6 +18,9 @@ public:
         
     }
     virtual bool WriteAFrame(int step) = 0;
+    virtual bool AddVector(const std::string &name, const std::vector<Vec3D > & vecs)= 0;
+    virtual bool ClearVector()= 0;
+
     virtual bool OpenFolder() = 0;
     virtual inline  std::string GetDerivedDefaultReadName()  {return "";}
     virtual std::string CurrentState() = 0;
