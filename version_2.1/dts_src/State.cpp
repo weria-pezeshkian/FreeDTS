@@ -787,6 +787,10 @@ while (input >> firstword) {
             input >> str >> type;
             if(type == Energy::GetDefaultReadName()){ // "FreeDTS1.0_FF"
                 m_pEnergyCalculator = new Energy(this);  // Initialize EnergyCalculator
+            }else if(type == HMFFEnergy::GetDefaultReadName()){
+                std::string data;
+                getline(input, data);
+                m_pEnergyCalculator = new HMFFEnergy(this, data);
             }
             else {
                 std::cout<<" error---> unknown force field type: "<<type<<std::endl;

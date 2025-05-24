@@ -84,6 +84,8 @@
 //--- energy calcuation method
 #include "AbstractEnergy.h"
 #include "Energy.h"
+#include "HMFFEnergy.h"
+
 //-- curvature
 #include "AbstractCurvature.h"
 #include "CurvatureByShapeOperatorType1.h"
