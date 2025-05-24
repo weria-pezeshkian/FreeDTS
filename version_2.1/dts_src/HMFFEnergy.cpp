@@ -14,7 +14,7 @@
 HMFFEnergy::HMFFEnergy(State *pState, std::string data) : Energy(pState){
   std::vector<std::string> ndata = Nfunction::Split(data);
 
-  if(ndata.size() < 5 || ndata.size() > 8){
+  if(ndata.size() < 5 || ndata.size() > 10){
     std::cerr << "MDFF Energy Parameters:\n"
               << "  Required: path xi theta_thr scaling offset\n"
               << "  Optional: [inversion] [step_size] [padding_factor] [kernel_size] [data_percentile]\n\n"
@@ -30,7 +30,7 @@ HMFFEnergy::HMFFEnergy(State *pState, std::string data) : Energy(pState){
               << "  percentile : theta_max determined as percentile of data (0.0-1.0, default: 0.999)\n\n"
               << "Examples:\n"
               << "  Basic: path.mrc 5.0 0 0.005 24.0\n"
-              << "  Full:  path.mrc 5.0 0 0.005 24.0 1 0.0 0.4\n";
+              << "  Full:  path.mrc 5.0 0 0.005 24.0 1 0.0 0.4 3 0.999\n";
     exit(1);
   }
 
