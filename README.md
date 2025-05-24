@@ -3,7 +3,7 @@ FreeDTS is software to perform computational research on biomembranes at messocp
 
 ## Important Notes
 Versions 1.0 and 2.0 have been finalized.
-We are currently working on Version 2.1. For new users, we recommend starting with Version 2.0.
+We are currently working on Version 2.2. For new users, we recommend starting with Version 2.x.
 ## Getting started with FreeDTS 
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
