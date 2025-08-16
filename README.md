@@ -13,10 +13,10 @@ We are currently working on Version 2.2. For new users, we recommend starting wi
 ## Getting started with FreeDTS 
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
-[User Manual v1](https://github.com/weria-pezeshkian/FreeDTS/wiki/User-Manual-for-version-1) \
 [User Manual v2](https://github.com/weria-pezeshkian/FreeDTS/wiki/User-Manual-for-version-2) \
-[Tutorials version 1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-with-version-1)  \
-[Tutorials version 2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Workshop-2024) 
+[Tutorials version 2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Workshop-2024) \
+[User Manual v1](https://github.com/weria-pezeshkian/FreeDTS/wiki/User-Manual-for-version-1) \
+[Tutorials version 1](https://github.com/weria-pezeshkian/FreeDTS/wiki/Tutorials-with-version-1)  
 
 ## version 2.0
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14278901.svg)](https://zenodo.org/records/14278901)
