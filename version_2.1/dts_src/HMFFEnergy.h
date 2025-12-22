@@ -28,8 +28,8 @@ public:
     }
 
 public:
-  inline std::string GetDerivedDefaultReadName() override { return "FreeDTS1.0_MDFF"; }
-  inline static std::string GetDefaultReadName() { return "FreeDTS1.0_MDFF"; }
+  inline std::string GetDerivedDefaultReadName() override { return "FreeDTS1.0_HMFF"; }
+  inline static std::string GetDefaultReadName() { return "FreeDTS1.0_HMFF"; }
 
   double SingleVertexEnergy(vertex *p) override;
   Vec3D CalculateGradient(vertex *p_vertex);
