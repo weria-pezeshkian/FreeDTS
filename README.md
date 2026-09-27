@@ -31,6 +31,6 @@ Nature Communications 15 548(2024) \
 <img width="281" alt="Screenshot 2024-01-27 at 17 34 26" src="https://github.com/weria-pezeshkian/FreeDTS/assets/47776510/123c34a5-2994-4788-8320-752ac24ed2fb">
 
 
-## Developer and Contribution 
+## Main Developer 
 Weria Pezeshkian (weria.pezeshkian@gmail.com; wp305@cam.ac.uk),
 University of Cambridge, UK
