@@ -8,8 +8,8 @@
 FreeDTS is software to perform computational research on biomembranes at messocpic length-scale. In FreeDTS, a membrane is represented by a dynamically triangulated surface equipped with vertex-based inclusions to integrate the effects of integral and peripheral membrane proteins. Several algorithms are included into the software that allow for simulation of framed membrane with constant tension, vesicles with various fixed volume or constant pressure difference, confined membranes into the fixed region of the space, constant fixed global curvature and application for external forces on regions of the membrane. In addition, the software allows one to turn off the shape evolution of the membrane and only explore inclusions organization. This allows to take realistic membrane shapes obtained from Cryo-ET and obtain heterogeneous organization of biomolecules which can be backmapped to finer simulations models. 
 
 ## Important Notes
-Versions 1.0 and 2.0 have been finalized.
-We are currently working on Version 2.2. For new users, we recommend starting with Version 2.x.
+Versions 1.0, 2.0 and 2.2 have been finalized. See [Major updates in FreeDTS v2.2](https://github.com/weria-pezeshkian/FreeDTS/wiki/Major-updates-in-version-2.2)
+We are currently working on Version 2.3. For new users, we recommend starting with Version 2.x.
 ## Getting started with FreeDTS 
 [Home](https://github.com/weria-pezeshkian/FreeDTS/wiki) \
 [Citations](https://github.com/weria-pezeshkian/FreeDTS/wiki/Citations) \
