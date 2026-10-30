@@ -1,0 +1,41 @@
+Integrator_Type = MC_Simulation
+ Min_Max_Lenghts = 1 3
+ MinfaceAngle = -0.5
+ Temperature = 1 0
+ Box_Centering_F = 0
+ Set_Steps = 1 500
+ EnergyMethod = FreeDTS1.0_FF
+ Kappa = 30 0 0
+ Edge_Parameters = 10 0 0
+ VertexArea = 0 0.7 0 0
+;Check_Mesh_Frequency = 1
+TimeSeriesData_Period = 100
+VertexPositionIntegrator = MetropolisAlgorithm 1 0 0.05
+AlexanderMove = MetropolisAlgorithm 1
+InclusionPoseIntegrator = MetropolisAlgorithm   0 0 
+VolumeCoupling = SecondOrder 0 10 0.5
+GlobalCurvatureCoupling = HarmonicPotential 1 0.3
+TotalAreaCoupling = HarmonicPotential 0 0.5
+;Dynamic_Box = IsotropicFrameTension 5 -3 XY
+;OpenEdgeEvolution = No  EvolutionWithConstantVertex 1 1
+;VectorFieldsForceOnVertex = No  Constant_NematicForce 2 2 
+DynamicTopology =  Three_Edge_Scission 1  MAP.xvg
+;ExternalFieldOnVectorFields = No ConstantFieldOnVectorFields 20 1  0  0  20 1 1 0  
+VisualizationFormat = VTUFileFormat VTU_F 100
+NonbinaryTrajectory = TSI TrajTSI 100
+Restart_Period = 200
+INCLUSION
+Define 3 Inclusions
+SRotation   Type   K   KG  KP  KL  C0     C0P  C0L
+1           Pro1   10   0   0   0   0.0   0   0    0   0  0  0.0
+2           Pro2   10  0   0   0   0.0   0   0    0    0  0  0.0
+2           Pro3   10  0   0   0   0.0   0   0    0    0  0  0.0
+GenerateInclusions
+Selection_Type Random
+TypeID       1    
+Density      1.0  
+Inclusion-Inclusion-Int
+1    1    1   2  -1 -1   
+
+
+
